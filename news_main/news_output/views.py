@@ -111,10 +111,6 @@ class NewsIndexView(SuccessMessageMixin, ListView):
     context_object_name = 'news_all'
     allow_empty = True
 
-
-
-
-
     def get_queryset(self):
         if self.kwargs['type_sort'] == 'default':
             return News.objects.all()
@@ -132,7 +128,6 @@ class NewsByRubricView(SingleObjectMixin, ListView):
     paginate_by = 2
     template_name = 'news_output/by_rubric.html'
     pk_url_kwarg = 'rubric_id'
-
 
     def get(self, request,  **kwargs):
         self.object = self.get_object(queryset=Rubric.objects.all())
@@ -162,9 +157,6 @@ class NewsCreateView(LoginRequiredMixin, CreateView):
     form_class = NewsForm
     # success_url = '/news_output/{rubric_id}'
     # success_url = reverse_lazy('news_output:by_rubric', kwargs={'rubric_id': object.rubric_id})
-
-
-
 
     def get_success_url(self):
         return reverse_lazy('news_output:by_rubric', kwargs={'rubric_id': self.object.rubric_id})
@@ -240,7 +232,7 @@ class SearchNews(ListView, forms.Form):
 
         return context
 
-<<<<<<< HEAD
+
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
@@ -275,5 +267,4 @@ def api_rubric_detail(request, pk):
     elif request.method == 'DELETE':
         rubric.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-=======
->>>>>>> e2147defc2401c88eeef7eac9411b5da21982db5
+
