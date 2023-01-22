@@ -1,0 +1,66 @@
+{% load static %}
+
+	{% for news in news_all %}
+	<article class="post">
+		<header>
+			<div class="title">
+				<h2><a href="{% url 'news_output:detail' pk=news.pk %}">{{ news.title }}</a></h2>
+				<p>Lorem ipsum dolor amet nullam consequat etiam feugiat</p>
+			</div>
+			<div class="meta">
+				<time class="published" datetime="2015-11-01">{{ news.published|date:"d E Y В H:i" }}</time>
+				<a href="#" class="author"><span class="name">Jane Doe</span><img src="{% static 'news_output/images/avatar.jpg' %}" alt="" /></a>
+			</div>
+		</header>
+		<a href="#" class="image featured"><img src="{% static 'news_output/images/pic01.jpg' %}" alt="" /></a>
+		<p>{{ news.description|truncatewords:10 }}</p>
+		<footer>
+			<ul class="actions">
+				<li><a href="{% url 'news_output:detail' pk=news.pk %}" class="button big">Continue Reading</a></li>
+			</ul>
+			<ul class="stats">
+				<li><a href="#">General</a></li>
+				<li><a href="#" class="icon fa-heart">28</a></li>
+				<li><a href="#" class="icon fa-comment">128</a></li>
+			</ul>
+		</footer>
+	</article>
+	{% endfor %}
+
+
+
+
+
+
+<!-- Pagination -->
+	<ul class="pagination_button_center actions pagination">
+		{% if page.has_previous %}
+		<li><button id='page_previous' class="button_mobile big previous button"></button></li>
+		{% else %}
+		<li><a class="button_mobile disabled big previous button" href=""></a></li>
+		{% endif %}
+		&nbsp; &nbsp; | &nbsp; &nbsp;
+		Страницы {{ page.number }} из {{ page.paginator.num_pages }}
+		&nbsp; &nbsp; | &nbsp; &nbsp;
+		{% if page.has_next %}
+		<li><button value="next" id="page_next" class="button_mobile big next button"></button></li>
+		{% else %}
+		<li><a class="button_mobile disabled big next button" href=""></a></li>
+		{% endif %}
+	</ul>
+
+<script>
+	 $('#page_next').click(function()  {
+            $.ajax({
+				url: "{% url 'news_output:ajax_sorting' %}",
+				type: "GET",
+				data: {condition_button: $('#page_next').val(),
+				type_sort: $('#sort_data').val()},
+             }).done(function(data) {
+                    $('#sorting').html(data)
+             }).fail(function () {
+                alert($('#3').text());
+            });
+        })
+</script>
+

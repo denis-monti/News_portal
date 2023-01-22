@@ -1,0 +1,67 @@
+{% extends "layout/base.html" %}
+
+{% load static %}
+{% load filtersandtags %}
+{% load thumbnail %}
+
+
+{% block content %}
+				<!-- Main -->
+					<div>
+						<div id="main">
+							<!-- Post -->
+								<article class="post">
+									<header>
+										{% ulst 5 5 %}
+										{{ news.published|cur }}
+										<div class="title">
+											<h2><a href="#">{{ news.title }}</a></h2>
+											<p>Lorem ipsum dolor amet nullam consequat etiam feugiat</p>
+										</div>
+										<div class="meta">
+											<time class="published" datetime="2015-11-01">{{ news.published|date:"d E Y В H:i" }}</time>
+											<a href="#" class="author"><span class="name">Jane Doe</span><img src="{% static 'news_output/images/avatar.jpg' %}" alt="" /></a>
+										</div>
+									</header>
+									{% if news.file_path == None %}
+									<a href="#" class="image featured"><img src="{% static 'news_output/images/pic01.jpg' %}" alt="" /></a>
+									{% else %}
+									<img src="{% thumbnail news.file_path 'default' %}" alt="" />
+									{% endif %}
+									<p style="word-break: break-all">{{ parsed_content|safe }}</p>
+									<a href="{% url 'news_output:edit_news' pk=news.pk %}">Редактировать</a>
+									<footer>
+										<ul class="stats">
+											<li><a href="#">General</a></li>
+											<li><a href="#" class="icon fa-heart">28</a></li>
+											<li><a href="#" class="icon fa-comment">128</a></li>
+										</ul>
+									</footer>
+								</article>
+						</div>
+						<div class="post">
+							<div style="display: flex; justify-content: space-between">
+								<h1>Комментарии 1</h1>
+								<div style="display: flex">
+									<div style="margin-right: 20px">скопировать ссылку</div>
+									<div>подписаться на новые коментарии</div>
+								</div>
+							</div>
+							{% for i in rubrics%}
+								<div style="margin-bottom: 50px">
+									<div style="display: flex">
+										<a href="/"><img src="sdaf" alt="фото пользователя"></a>
+										<h2>Имя пользователя</h2>
+										<span>дата публикации комментария</span>
+									</div>
+									<p>Сам коммент</p>
+									<div>
+										<a><span>оценка коментария</span></a>
+										<a><span>ответить на коммент</span></a>
+										<a><span>скопировать ссылку</span></a>
+									</div>
+								</div>
+							{% endfor %}
+						</div>
+					</div>
+{% endblock %}
