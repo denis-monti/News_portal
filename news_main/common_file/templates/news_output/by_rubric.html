@@ -1,0 +1,78 @@
+{% extends "layout/base.html" %}
+
+{% load static %}
+
+{% block title %}{{ current_rubric.name }}{% endblock %}
+
+{% block content %}
+				<!-- Main -->
+							<div id="main">
+
+												<!-- Post -->
+												<div class="post">
+								<div style="display: flex; justify-content: space-evenly">
+						<!--			<select style="width: 20%">-->
+						<!--				<option>2</option>-->
+						<!--				<option>2</option>-->
+						<!--				<option>2</option>-->
+						<!--			</select>-->
+									<div style="display: flex; justify-content: space-around">
+										<div style="width: 25%"><a href="{% url 'news_output:by_rubric' rubric_id=current_rubric.pk type_sort='best' %}">Лучшее</a></div>
+										<div><a href="{% url 'news_output:by_rubric' rubric_id=current_rubric.pk type_sort='published' %}">По убыванию даты публикации</a></div>
+										<div><a href="{% url 'news_output:by_rubric' rubric_id=current_rubric.pk type_sort='-published' %}">По возрастанию даты публикации</a></div>
+									</div>
+									<div style="width: 50%; text-align: center">
+										Что то будет
+									</div>
+								</div>
+							</div>
+							{% for news in news_all %}
+							<article class="post">
+								<header>
+									<div class="title">
+										<h2><a href="{% url 'news_output:detail' pk=news.pk %}">{{ news.title }}</a></h2>
+										<p>Lorem ipsum dolor amet nullam consequat etiam feugiat</p>
+									</div>
+									<div class="meta">
+										<time class="published" datetime="2015-11-01">{{ news.published|date:"d E Y В H:i" }}</time>
+										<a href="#" class="author"><span class="name">Jane Doe</span><img src="{% static 'news_output/images/avatar.jpg' %}" alt="" /></a>
+									</div>
+								</header>
+								<a href="#" class="image featured"><img src="{% static 'news_output/images/pic01.jpg' %}" alt="" /></a>
+								<p>{{ news.description|truncatewords:10 }}</p>
+								<footer>
+									<ul class="actions">
+										<li><a href="{% url 'news_output:detail' pk=news.pk %}" class="button big">Continue Reading</a></li>
+									</ul>
+									<ul class="stats">
+										<li><a href="#">General</a></li>
+										<li><a href="#" class="icon fa-heart">28</a></li>
+										<li><a href="#" class="icon fa-comment">128</a></li>
+									</ul>
+								</footer>
+							</article>
+							{% endfor %}
+
+
+
+
+
+						<!-- Pagination -->
+							<ul class="pagination_button_center actions pagination">
+								{% if page_obj.has_previous %}
+								<li><a class="button_mobile button big previous button" href="?page={{ page_obj.previous_page_number }}"></a></li>
+								{% else %}
+								<li><a class="button_mobile disabled big previous button" href=""></a></li>
+								{% endif %}
+								&nbsp; &nbsp; | &nbsp; &nbsp;
+								Страницы {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
+								&nbsp; &nbsp; | &nbsp; &nbsp;
+								{% if page_obj.has_next %}
+								<li><a  class="button_mobile button big next" href="?page={{ page_obj.next_page_number }} "></a></li>
+								{% else %}
+								<li><a class="button_mobile disabled big next button" href=""></a></li>
+								{% endif %}
+							</ul>
+
+					</div>
+{% endblock %}
