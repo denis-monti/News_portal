@@ -1,0 +1,21 @@
+{% extends "layout/base.html" %}
+
+{% load static %}
+
+
+{% block content %}
+<div id="main">
+    <article class="post">
+        <div>
+            {{ extra_context.rubrics }}
+            <h1>Регистрация нового пользователя</h1>
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <input type="hidden" name="next" value="{{ next }}">
+                <input style="width: 100%" type="submit" value="Зарегистрироваться">
+            </form>
+        </div>
+    </article>
+</div>
+{% endblock %}

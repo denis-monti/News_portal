@@ -1,6 +1,7 @@
 {% extends "layout/base.html" %}
 
 {% load static %}
+{% load filtersandtags %}
 
 
 {% block content %}
@@ -10,11 +11,6 @@
 	<!-- Post -->
 	<div class="post">
 		<div style="display: flex; justify-content: space-evenly">
-<!--			<select style="width: 20%">-->
-<!--				<option>2</option>-->
-<!--				<option>2</option>-->
-<!--				<option>2</option>-->
-<!--			</select>-->
 			<div style="display: flex; justify-content: space-around">
 				<div style="width: 25%"><a href="{% url 'news_output:index_sort' type_sort='best' %}">Лучшее</a></div>
 				<div><a href="{% url 'news_output:index_sort' type_sort='published' %}">По убыванию даты публикации</a></div>
@@ -43,10 +39,14 @@
 					</div>
 					<div class="meta">
 						<time class="published" datetime="2015-11-01">{{ news.published|date:"d E Y В H:i" }}</time>
-						<a href="#" class="author"><span class="name">Jane Doe</span><img src="{% static 'news_output/images/avatar.jpg' %}" alt="" /></a>
+						<a href="#" class="author"><span class="name">{{ news.author }}</span><img src="{% static 'news_output/images/avatar.jpg' %}" alt="" /></a>
 					</div>
 				</header>
-				<a href="#" class="image featured"><img src="{% static 'news_output/images/pic01.jpg' %}" alt="" /></a>
+				{% if news.image == None or news.image == '' %}
+				<a href="#" class="image featured"><img src="{% static 'news_portal/images/pic01.jpg' %}" alt="" /></a>
+				{% else %}
+				<img src="{{ news.image.url }}" alt="" />
+				{% endif %}
 				<p>{{ news.description|truncatewords:10 }}</p>
 				<footer>
 					<ul class="actions">
@@ -54,8 +54,9 @@
 					</ul>
 					<ul class="stats">
 						<li><a href="#">General</a></li>
-						<li><a href="#" class="icon fa-heart">28</a></li>
-						<li><a href="#" class="icon fa-comment">128</a></li>
+						<li><span  class="icon fa-thumbs-up">{{ news.like }}</span></li>
+						<li><span href="#" class="icon fa-comment">{{ news.comment_set.count }}</span></li>
+						<li><span href="#" class="icon fa-thumbs-down">{{ news.dislike }}</span></li>
 					</ul>
 				</footer>
 			</article>
@@ -86,20 +87,6 @@
 
 
 
-<!--<script>-->
-<!--	$(document).ready(function (){-->
-<!--	 $('#sort_data').change(function()  {-->
-<!--            $.ajax({-->
-<!--				url: "Х}",-->
-<!--				type: "GET",-->
-<!--				data: {condition_button: $(this).prop('checked'),-->
-<!--				type_sort: $('#sort_data').val()},-->
-<!--             }).done(function(data) {-->
-<!--                    $('#sorting').html(data)-->
-<!--             }).fail(function () {-->
-<!--                alert($('#3').text());-->
-<!--            });-->
-<!--        })})-->
-<!--</script>-->
+
 
 {% endblock %}

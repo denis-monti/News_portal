@@ -1,0 +1,16 @@
+{% extends "layout/base.html" %}
+
+{% load static %}
+
+{% block content %}
+<div style="margin-left: auto; margin-right: auto; width: 45%">
+	<div id="main">
+		<article class="post">
+			<div>
+				<h2>Запрос на изменение пароля отправлен</h2>
+				<a href="{% url 'news_output:index' %}">Вернуться на главную страницу</a>
+			</div>
+		</article>
+	</div>
+</div>
+{% endblock %}

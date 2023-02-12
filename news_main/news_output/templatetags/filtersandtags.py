@@ -1,16 +1,24 @@
 from django import template
-from django.utils.safestring import mark_safe
+
 register = template.Library()
 
-@register.filter(name='cur')
-def currency(value):
-    return type(value)
+@register.filter(name='index_for_comment_sub')
+def index_for_comment_sub(indexable, i):
+    if i == 0:
+        return 0
+    return indexable[i - 1]
 
-@register.simple_tag(takes_context=True)
-def lst(context, sep, *args):
-    return mark_safe('%s (Итого '
-                     '<strong>%s</strong>) %s' % (sep.join(args), len(args), context['parsed_content']))
+@register.filter(name='index_for_count_like_dislike')
+def index(indexable, i):
+    return indexable[i]['total']
 
-@register.inclusion_tag('news_output/22.html')
-def ulst(*args):
-    return {'items': args}
+@register.filter(name='index_for_news')
+def index(indexable, i):
+    return indexable[i]['news']
+
+@register.filter(name='get_item')
+def get_item(Queryset):
+    return Queryset.id
+
+
+

@@ -1,0 +1,1 @@
+default_app_config = 'news_main.apps.news_mainConfig'

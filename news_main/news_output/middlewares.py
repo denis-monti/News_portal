@@ -1,4 +1,6 @@
-from .models import Rubric
+from .models import News, SubRubric
+from datetime import datetime
+
 
 class RubricsMiddleware:
     def __init__(self, get_response):
@@ -10,8 +12,14 @@ class RubricsMiddleware:
 
 
     def process_template_response(self, request, response):
-        response.context_data['rubrics'] = Rubric.objects.all()
+        if request.path.split("/")[1] == 'api':
+            return response
+        response.context_data['rubrics'] = SubRubric.objects.all()
+        date = datetime.today()
+        week = date.strftime("%V")
+        response.context_data['news_week_more_views'] = News.objects.filter(published__week=week)
+
         return response
 
 def rubrics(request):
-    return {'rubrics': Rubric.objects.all()}
+    return {'rubrics': SubRubric.objects.all()}

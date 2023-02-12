@@ -12,10 +12,8 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 
 from pathlib import Path
 
-<<<<<<< HEAD
+
 import corsheaders.middleware
-=======
->>>>>>> e2147defc2401c88eeef7eac9411b5da21982db5
 import django.core.mail.backends.console
 import django_redis.cache
 from django.contrib import messages
@@ -33,6 +31,10 @@ MESSAGE_LEVEL = messages.DEBUG
 SECRET_KEY = 'django-insecure-sa(hzy0che=6^9tscmwam1vba=spc8*oq6!e%u_e@itln(z9_&'
 
 # SECURITY WARNING: don't run with debug turned on in production!
+# DEBUG = False
+#
+# ALLOWED_HOSTS = ['www.supersite.ru', '127.0.0.1']
+
 DEBUG = True
 
 ALLOWED_HOSTS = []
@@ -50,24 +52,25 @@ INSTALLED_APPS = [
     'django.contrib.postgres',
     # my modules or applications #
     'news_output',
+    'news_main',
+    'news_auth_registered',
     # elastic search#
-    'django_elasticsearch_dsl',
+    # 'django_elasticsearch_dsl',
     #redis#
     # 'django_redis',
     # captcha # 
     'captcha',
-<<<<<<< HEAD
     'rest_framework',
     'corsheaders',
-=======
->>>>>>> e2147defc2401c88eeef7eac9411b5da21982db5
-
+    'django_cleanup',
     #форматирование страниц под html разметку#
     'precise_bbcode',
     # для формирование миниатюр#
     'easy_thumbnails',
     # авторизация на сайте через стороние сервисы#
-    'social_django'
+    'social_django',
+    #приложение для непонятного #
+    'api'
 ]
 
 # EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend'
@@ -75,16 +78,16 @@ INSTALLED_APPS = [
 EMAIL_HOST='smtp.mail.ru'
 EMAIL_PORT=587
 EMAIL_USE_TLS=1
-EMAIL_HOST_USER='karkalak@mail.ru'
-EMAIL_HOST_PASSWORD='BbgWa7vdbFSCKGmVFip9'
+EMAIL_HOST_USER='*****'
+EMAIL_HOST_PASSWORD='*****'
 EMAIL_TIMEOUT = 15
 SERVER_EMAIL=EMAIL_HOST_USER
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-<<<<<<< HEAD
+
 CORS_ORIGIN_ALLOW_ALL = True
-=======
->>>>>>> e2147defc2401c88eeef7eac9411b5da21982db5
+CORS_URL_REGEX = r'^/api/.*$'
+
 
 ADMIN = [
     ('denchik', 'sinde.blow@gmail.com')
@@ -113,7 +116,7 @@ CAPTCHA_MATH_CHALLENGE_OPERATOR = 'x'
 
 
 
-<<<<<<< HEAD
+
 # CACHES = {
 #     'default': {
 #         'BACKEND': 'django_redis.cache.RedisCache',
@@ -128,40 +131,40 @@ CAPTCHA_MATH_CHALLENGE_OPERATOR = 'x'
 # SESSION_ENGINE='django.contrib.sessions.backends.cache'
 #
 # SESSION_CACHE_ALIAS='session_storage'
-=======
-CACHES = {
-    'default': {
-        'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://localhost:6379/0'
-    },
-    'session_storage': {
-        'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://localhost:6379/2'
-    }
-}
 
-SESSION_ENGINE='django.contrib.sessions.backends.cache'
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django_redis.cache.RedisCache',
+#         'LOCATION': 'redis://localhost:6379/0'
+#     },
+#     'session_storage': {
+#         'BACKEND': 'django_redis.cache.RedisCache',
+#         'LOCATION': 'redis://localhost:6379/2'
+#     }
+# }
 
-SESSION_CACHE_ALIAS='session_storage'
->>>>>>> e2147defc2401c88eeef7eac9411b5da21982db5
+# SESSION_ENGINE='django.contrib.sessions.backends.cache'
+#
+# SESSION_CACHE_ALIAS='session_storage'
+
 
 THUMBNAIL_ALIASES = {
-    'news_output.News.file_path': {
+    '': {
         'default': {
             'size': (200, 0)
         }
     }
 }
 
-THUMBNAIL_MEDIA_ROOT = os.path.join(BASE_DIR, 'common_file/static/media/small_img/')
+THUMBNAIL_MEDIA_ROOT = os.path.join(BASE_DIR, 'common_file/media/small_img/')
 
 THUMBNAIL_MEDIA_URL = '/media/small_img'
 
-ELASTICSEARCH_DSL={
-    'default': {
-        'hosts': 'http://localhost:9200'
-    },
-}
+# ELASTICSEARCH_DSL={
+#     'default': {
+#         'hosts': 'http://localhost:9200'
+#     },
+# }
 
 # максимально допустимый объем полученных от
 # посетителя данных в виде числа в байтах от dos#
@@ -171,15 +174,16 @@ DATA_UPLOAD_MAX_NUMBER_FIELDS = 1000
 
 
 MIDDLEWARE = [
-<<<<<<< HEAD
     # для rest_framework #
     'corsheaders.middleware.CorsMiddleware',
 
-=======
->>>>>>> e2147defc2401c88eeef7eac9411b5da21982db5
+
     'django.middleware.http.ConditionalGetMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    ##
+    'corsheaders.middleware.CorsMiddleware',
+    ##
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -200,6 +204,7 @@ TEMPLATES = [
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
+                'django.template.context_processors.media',
                 'django.template.context_processors.request',
                 'django.template.context_processors.csrf',
                 'django.contrib.auth.context_processors.auth',
@@ -287,12 +292,67 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_REDIRECT_URL = 'news_output:index'
 
-<<<<<<< HEAD
-LOGIN_URL = 'news_auth:login'
-=======
-LOGIN_URL = 'news_output:login'
->>>>>>> e2147defc2401c88eeef7eac9411b5da21982db5
 
-MEDIA_ROOT = os.path.join(BASE_DIR, 'common_file/static/media')
+LOGIN_URL = 'news_auth_registered:login'
 
-MEDIA_URL = '/media/'
+
+
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'common_file/media')
+
+MEDIA_URL = 'common_file/media/'
+
+# как модель пользователя, используемая подсистемой разграничения доступа Django
+AUTH_USER_MODEL = 'news_auth_registered.AdvUser'
+
+def info_filter(message):
+    return message.levelname == 'INFO'
+
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': True,
+#     'filters': {
+#         'require_debug_false': {
+#             '()': 'django.utils.log.RequireDebugFalse',
+#         },
+#         'require_debug_true': {
+#             '()': 'django.utils.log.RequireDebugTrue'
+#         },
+#     },
+#     'formatters': {
+#         'simple': {
+#             'format': '[%(asctime)s] % (levelname)s: %(message)s',
+#             'datefmt': '%Y.%m.%d %H:%M:%S',
+#         }
+#     },
+#     'handlers': {
+#         'console_dev': {
+#             'class': 'logging.StreamHandler',
+#             'formatter': 'simple',
+#             'filters': ['require_debug_true'],
+#         },
+#         'console_prod': {
+#             'class': 'logging.StreamHandler',
+#             'formatter': 'simple',
+#             'level': 'ERROR',
+#             'filters': ['require_debug_false'],
+#         },
+#         'file': {
+#             'class': 'logging.handlers.RotatingFileHandler',
+#             'filename': 'c:/news_portal/django-site.log',
+#             'maxBytes': 1048576,
+#             'backupCount': 10,
+#             'formatter': 'simple',
+#         },
+#     },
+#     'loggers': {
+#         'django': {
+#             'handlers': ['console_dev', 'console_prod'],
+#         },
+#         'django.server': {
+#             'handlers': ['file'],
+#             'level': 'INFO',
+#             'propagate': True,
+#         },
+#     }
+# }

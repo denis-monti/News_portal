@@ -1,0 +1,46 @@
+{% extends "layout/base.html" %}
+
+{% load static %}
+
+
+{% block content %}
+<div style="margin-left: auto; margin-right: auto; width: 45%">
+	<div id="main">
+		<article class="post">
+			<div>
+				{{ extra_context.rubrics }}
+				<h2>Вход</h2>
+				{% if user.is_authenticated %}
+				<p>Вы уже выполнили вход</p>
+				<h1><a href="{% url 'news_output:index' %}">Вернуться на главную</a></h1>
+				{% else %}
+				<form method="post">
+					{% csrf_token %}
+					{{ form.as_p }}
+					<input type="hidden" name="next" value="{{ next }}">
+					<input style="width: 100%" type="submit" value="Войти">
+					<a href="{% url 'news_auth_registered:password_reset' %}">Забыли пароль?</a>
+				</form>
+				<div>
+					<label>Или войдите с помощью других сервисов</label>
+					<section id="footer">
+						<ul class="icons">
+							<li><a style="background-color: red" href="{% url 'social:begin' 'vk-oauth2' %}" class="fa-vk" title="Зарегистрироваться с помощью Vkontakte"><span class="label">Vkontakte</span></a></li>
+							<li><a href="#" class="fa-odnoklassniki" title="Зарегистрироваться с помощью Odnoklassniki"><span class="label">Odnoklassniki</span></a></li>
+							<li><a href="#" class="fa-instagram" title="Зарегистрироваться с помощью Instagram"><span class="label">Instagram</span></a></li>
+							<li><a href="#" class="fa-twitter" title="Зарегистрироваться с помощью Twitter"><span class="label">Twitter</span></a></li>
+							<li><a href="#" class="fa-facebook" title="Зарегистрироваться с помощью Facebook"><span class="label">Facebook</span></a></li>
+							<li><a href="#" class="fa-github" title="Зарегистрироваться с помощью Github"><span class="label">Github</span></a></li>
+						</ul>
+					</section>
+				</div>
+				{% endif %}
+			</div>
+		</article>
+	</div>
+	<div class="post" style="text-align: center">
+		<span>Еще нет аккаунта?</span>
+		<a href="{% url 'news_auth_registered:register' %}">Зарегистрируйтесь</a>
+	</div>
+</div>
+{% endblock %}

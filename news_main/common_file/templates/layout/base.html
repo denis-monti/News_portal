@@ -1,5 +1,6 @@
 {% load static %}
 {% load cache %}
+{% load thumbnail %}
 
 <!DOCTYPE html>
 <html>
@@ -7,11 +8,36 @@
 		<title>{% block title %}Главная{% endblock %} :: Новостной портал</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<!--[if lte IE 8]><script src="{% static 'news_output/js/ie/html5shiv.js' %}"></script><![endif]-->
-		<link rel="stylesheet" type="text/css" href="{% static 'news_output/css/reset.css' %}">
-		<link rel="stylesheet" href="{% static 'news_output/css/main.css' %}" />
-		<!--[if lte IE 9]><link rel="stylesheet" href="{% static 'news_output/css/ie9.css' %}" /><![endif]-->
-		<!--[if lte IE 8]><link rel="stylesheet" href="{% static 'news_output/css/ie8.css' %}" /><![endif]-->
+		<!--[if lte IE 8]><script src="{% static 'news_portal/js/ie/html5shiv.js' %}"></script><![endif]-->
+		<link rel="stylesheet" type="text/css" href="{% static 'news_portal/css/reset.css' %}">
+		<link rel="stylesheet" href="{% static 'news_portal/css/main.css' %}" />
+		<!--[if lte IE 9]><link rel="stylesheet" href="{% static 'news_portal/css/ie9.css' %}" /><![endif]-->
+		<!--[if lte IE 8]><link rel="stylesheet" href="{% static 'news_portal/css/ie8.css' %}" /><![endif]-->
+		<style>
+
+
+			li:hover {
+			  cursor: pointer;
+			}
+
+			ul li ul {
+			  visibility: hidden;
+			  opacity: 0;
+			  position: absolute;
+
+			  margin-top: 1rem;
+			  display: none;
+			}
+
+			ul li:hover > ul,
+			ul li ul:hover {
+			  visibility: visible;
+			  opacity: 1;
+			  display: block;
+			}
+
+
+		</style>
 	</head>
 	<body>
 
@@ -24,11 +50,22 @@
 						<h1><a href="{% url 'news_output:index' %}">Главная Страница</a></h1>
 						{% if user.is_superuser %}
 						<h1><a style="border-left: solid 1px rgba(160, 160, 160, 0.3); padding-left: 25px" href="{% url 'admin:index' %}">Сайт администратора</a></h1>
+						<h1><a style="border-left: solid 1px rgba(160, 160, 160, 0.3); padding-left: 25px" href="{% url 'news_output:publication_user_auth' type_sort='default' user_id=user.id %}">Мои публикации</a></h1>
 						{% endif %}
-						<nav class="links">
+						<nav class="links" role="navigation">
 							<ul>
-								{% for rubric in rubrics %}
-								<li><a href="{{ rubric.get_absolute_url }}">{{ rubric.name }}</a></li>
+								{% for superubric in rubrics %}
+								{% ifchanged superubric.super_rubric.pk %}
+								<li>
+									{{ superubric.super_rubric.name }}
+								{% endifchanged %}
+									<ul style="display: flex; flex-direction: column">
+										{% for rubric in rubrics %}
+												{% if rubric.super_rubric.pk == superubric.super_rubric.pk %}
+												<li><a href="{{ rubric.get_absolute_url }}">{{ rubric.name }}</a></li>
+												{% endif %}
+										{% endfor %}
+									</ul>
 								{% endfor %}
 								<li><a href="{% url 'news_output:news_add' %}">Добавить Новость</a></li>
 							</ul>
@@ -43,11 +80,7 @@
 								</li>
 								{% if not user.is_authenticated %}
 								<li class="auth">
-<<<<<<< HEAD
-									<a class="fa-user" href="{% url  'news_auth:login' %}">Auth</a>
-=======
-									<a class="fa-user" href="{% url  'news_output:login' %}">Auth</a>
->>>>>>> e2147defc2401c88eeef7eac9411b5da21982db5
+									<a class="fa-user" href="{% url  'news_auth_registered:login' %}">Auth</a>
 								</li>
 								{% else %}
 								<li class="menu">
@@ -99,33 +132,23 @@
 							</section>
 
 						<!-- Actions -->
+						{% if user.is_authenticated %}
 							<section>
 								<ul class="actions vertical">
-<<<<<<< HEAD
-									<li><a href="{% url 'news_auth:password_change' %}" class="button big fit">Сменить пароль</a></li>
+									<li><a href="{% url 'news_auth_registered:password_change' %}" class="button big fit">Сменить пароль</a></li>
 								</ul>
 								<ul class="actions vertical">
-									<li><a href="{% url 'news_auth:logout' %}" class="button big fit">Настройки профиля</a></li>
+									<li><a href="{% url 'news_auth_registered:profile_setting' %}" class="button big fit">Настройки профиля</a></li>
 								</ul>
 								<ul class="actions vertical">
-									<li><a href="{% url 'news_auth:logout' %}" class="button big fit">Язык, Лента</a></li>
+									<li><a href="{% url 'news_auth_registered:logout' %}" class="button big fit">Язык, Лента</a></li>
 								</ul>
 								<ul class="actions vertical">
-									<li><a href="{% url 'news_auth:logout' %}" class="button big fit">Выйти из личного кабинета</a></li>
-=======
-									<li><a href="{% url 'news_output:password_change' %}" class="button big fit">Сменить пароль</a></li>
-								</ul>
-								<ul class="actions vertical">
-									<li><a href="{% url 'news_output:logout' %}" class="button big fit">Настройки профиля</a></li>
-								</ul>
-								<ul class="actions vertical">
-									<li><a href="{% url 'news_output:logout' %}" class="button big fit">Язык, Лента</a></li>
-								</ul>
-								<ul class="actions vertical">
-									<li><a href="{% url 'news_output:logout' %}" class="button big fit">Выйти из личного кабинета</a></li>
->>>>>>> e2147defc2401c88eeef7eac9411b5da21982db5
+									<li><a href="{% url 'news_auth_registered:logout' %}" class="button big fit">Выйти из личного кабинета</a></li>
 								</ul>
 							</section>
+						{% else  %}
+						{% endif %}
 
 
 					</section>
@@ -139,60 +162,15 @@
 
 						<!-- Intro -->
 							<section id="intro">
-								<a href="#" class="logo"><img src="{% static 'news_output/images/logo.jpg' %}" alt="" /></a>
+								<a href="#" class="logo"><img src="{% static 'news_portal/images/logo.jpg' %}" alt="" /></a>
 								<header>
 									<h2>Future Imperfect</h2>
 									<p>Another fine responsive site template by <a href="http://html5up.net">HTML5 UP</a></p>
 								</header>
 							</section>
 
-						<!-- Mini Posts -->
-							<section>
-								<h1>Ещё от автора</h1>
-								<div class="mini-posts">
-
-									<!-- Mini Post -->
-										<article class="mini-post">
-											<header>
-												<h3><a href="#">Vitae sed condimentum</a></h3>
-												<time class="published" datetime="2015-10-20">October 20, 2015</time>
-												<a href="#" class="author"><img src="{%  static 'news_output/images/avatar.jpg' %}" alt="" /></a>
-											</header>
-											<a href="#" class="image"><img src="{%  static 'news_output/images/pic04.jpg' %}" alt="" /></a>
-										</article>
-
-									<!-- Mini Post -->
-										<article class="mini-post">
-											<header>
-												<h3><a href="#">Rutrum neque accumsan</a></h3>
-												<time class="published" datetime="2015-10-19">October 19, 2015</time>
-												<a href="#" class="author"><img src="{%  static 'news_output/images/avatar.jpg' %}" alt="" /></a>
-											</header>
-											<a href="#" class="image"><img src="{%  static 'news_output/images/pic05.jpg' %}" alt="" /></a>
-										</article>
-
-									<!-- Mini Post -->
-										<article class="mini-post">
-											<header>
-												<h3><a href="#">Odio congue mattis</a></h3>
-												<time class="published" datetime="2015-10-18">October 18, 2015</time>
-												<a href="#" class="author"><img src="{%  static 'news_output/images/avatar.jpg' %}" alt="" /></a>
-											</header>
-											<a href="#" class="image"><img src="{%  static 'news_output/images/pic06.jpg' %}" alt="" /></a>
-										</article>
-
-									<!-- Mini Post -->
-										<article class="mini-post">
-											<header>
-												<h3><a href="#">Enim nisl veroeros</a></h3>
-												<time class="published" datetime="2015-10-17">October 17, 2015</time>
-												<a href="#" class="author"><img src="{%  static 'news_output/images/avatar.jpg' %}" alt="" /></a>
-											</header>
-											<a href="#" class="image"><img src="{%  static 'news_output/images/pic07.jpg' %}" alt="" /></a>
-										</article>
-
-								</div>
-							</section>
+						{% block content_author %}
+						{% endblock %}
 
 						<!-- Posts List -->
 							<section>
@@ -205,7 +183,11 @@
 												<h3><a href="{% url 'news_output:detail' pk=news_week.pk %}">{{ news_week.title }}</a></h3>
 												<time class="published" datetime="2015-10-20">{{ news_week.published|date:"d E Y В H:i" }}</time>
 											</header>
-											<a href="#" class="image featured"><img src="{% static 'news_output/images/pic01.jpg' %}" alt="" /></a>
+											{% if news_week.image == None or news_week.image == '' %}
+											<a href="#" class="image featured"><img src="{% static 'news_portal/images/pic01.jpg' %}" alt="" /></a>
+											{% else %}
+											<a href="{% url 'news_output:detail' pk=news_week.pk %}" class="image featured"><img src="{% thumbnail news_week.image 'default' %}" alt="" /></a>
+											{% endif %}
 										</article>
 									</li>
 									{% endfor %}
@@ -215,11 +197,8 @@
 						<!-- About -->
 							<section class="blurb">
 								<h2>О нас</h2>
-<<<<<<< HEAD
 								<p>Это сайт.</p>
-=======
 								<p>Этот сайт, возможно, первый полноценный проект дениса.</p>
->>>>>>> e2147defc2401c88eeef7eac9411b5da21982db5
 								<ul class="actions">
 									<li><a href="#" class="button">Подробнее</a></li>
 								</ul>
@@ -244,11 +223,13 @@
 			</div>
 
 		<!-- Scripts -->
-			<script src="{% static 'news_output/js/jquery.min.js' %}"></script>
-			<script src="{% static 'news_output/js/skel.min.js' %}"></script>
-			<script src="{% static 'news_output/js/util.js' %}"></script>
-			<!--[if lte IE 8]><script src="{% static 'news_output/js/ie/respond.min.js' %}"></script><![endif]-->
-			<script src="{% static 'news_output/js/main.js' %}"></script>
+			<script src="{% static 'news_portal/js/jquery.min.js' %}"></script>
+			<script src="{% static 'news_portal/js/skel.min.js' %}"></script>
+			<script src="{% static 'news_portal/js/util.js' %}"></script>
+			<!--[if lte IE 8]><script src="{% static 'news_portal/js/ie/respond.min.js' %}"></script><![endif]-->
+			<script src="{% static 'news_portal/js/main.js' %}"></script>
+			{% block js %}
+			{% endblock %}
 
 	</body>
 </html>

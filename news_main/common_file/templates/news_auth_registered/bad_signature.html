@@ -1,0 +1,19 @@
+{% extends "layout/base.html" %}
+
+{% load static %}
+
+{% block title %} Ошибка при активации{% endblock %}
+
+{% block content %}
+<div style="margin-left: auto; margin-right: auto; width: 45%">
+	<div id="main">
+		<article class="post">
+			<div>
+				<h2>Активация</h2>
+                <p>Аактивация пользователя с таким именем прошла неудачно.</p>
+				<p><a href="{% url 'news_auth_registered:register' %}">Зарегистрироваться повторно</a></p>
+			</div>
+		</article>
+	</div>
+</div>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "layout/base.html" %}
+
+
+
+{% block title %}Пользователь уже активирован{% endblock %}
+
+{% block content %}
+<div style="margin-left: auto; margin-right: auto; width: 45%">
+	<div id="main">
+		<article class="post">
+			<div>
+				<h2>Активация</h2>
+				<p>Регистрация пользователя завершена.</p>
+                <p>Пользователь с таким именем был активирован ранее.</p>
+				<p><a href="{% url 'news_auth_registered:login' %}">Войти на сайт</a></p>
+			</div>
+		</article>
+	</div>
+</div>
+{% endblock %}

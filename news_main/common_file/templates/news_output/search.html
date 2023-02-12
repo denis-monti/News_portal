@@ -34,10 +34,14 @@
 						</div>
 						<div class="meta">
 							<time class="published" datetime="2015-11-01">{{ news.published|date:"d E Y В H:i" }}</time>
-							<a href="#" class="author"><span class="name">Jane Doe</span><img src="{% static 'news_output/images/avatar.jpg' %}" alt="" /></a>
+							<a href="#" class="author"><span class="name">{{ news.author }}</span><img src="{% static 'news_output/images/avatar.jpg' %}" alt="" /></a>
 						</div>
 					</header>
-					<a href="#" class="image featured"><img src="{% static 'news_output/images/pic01.jpg' %}" alt="" /></a>
+					{% if news.image == None or news.image == '' %}
+					<a href="#" class="image featured"><img src="{% static 'news_portal/images/pic01.jpg' %}" alt="" /></a>
+					{% else %}
+					<img src="{{ news.image.url }}" alt="" />
+					{% endif %}
 					<p>{{ news.description|truncatewords:10 }}</p>
 					<footer>
 						<ul class="actions">
@@ -46,7 +50,7 @@
 						<ul class="stats">
 							<li><a href="#">General</a></li>
 							<li><a href="#" class="icon fa-heart">28</a></li>
-							<li><a href="#" class="icon fa-comment">128</a></li>
+							<li><a href="#" class="icon fa-comment">{{ news.comment_set.count }}</a></li>
 						</ul>
 					</footer>
 				</article>
@@ -59,7 +63,7 @@
 	<!-- Pagination -->
 		<ul class="pagination_button_center actions pagination">
 			{% if page_obj.has_previous %}
-			<li><a class="button_mobile button big previous button" href="?page={{ page_obj.previous_page_number }}"></a></li>
+			<li><a class="button_mobile button big previous button" href="?page={{ page_obj.previous_page_number}}&query={{ search_text }}"></a></li>
 			{% else %}
 			<li><a class="button_mobile disabled big previous button" href=""></a></li>
 			{% endif %}
@@ -67,7 +71,7 @@
 			Страницы {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
 			&nbsp; &nbsp; | &nbsp; &nbsp;
 			{% if page_obj.has_next %}
-			<li><a  class="button_mobile button big next" href="?page={{ page_obj.next_page_number }} "></a></li>
+			<li><a  class="button_mobile button big next" href="?page={{ page_obj.next_page_number }}&query={{ search_text }}"></a></li>
 			{% else %}
 			<li><a class="button_mobile disabled big next button" href=""></a></li>
 			{% endif %}

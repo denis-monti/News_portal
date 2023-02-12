@@ -12,56 +12,195 @@
 							<!-- Post -->
 								<article class="post">
 									<header>
-										{% ulst 5 5 %}
-										{{ news.published|cur }}
 										<div class="title">
 											<h2><a href="#">{{ news.title }}</a></h2>
 											<p>Lorem ipsum dolor amet nullam consequat etiam feugiat</p>
 										</div>
 										<div class="meta">
-											<time class="published" datetime="2015-11-01">{{ news.published|date:"d E Y В H:i" }}</time>
-											<a href="#" class="author"><span class="name">Jane Doe</span><img src="{% static 'news_output/images/avatar.jpg' %}" alt="" /></a>
+											<time class="published" >{{ news.published|date:"d E Y В H:i" }}</time>
+											<a href="#" class="author"><span class="name">{{ news.author }}</span><img src="{% static 'news_output/images/avatar.jpg' %}" alt="" /></a>
 										</div>
 									</header>
-									{% if news.file_path == None %}
-									<a href="#" class="image featured"><img src="{% static 'news_output/images/pic01.jpg' %}" alt="" /></a>
+									{% if news.image == None or news.image == '' %}
+									<a href="#" class="image featured"><img src="{% static 'news_portal/images/pic01.jpg' %}" alt="" /></a>
 									{% else %}
-									<img src="{% thumbnail news.file_path 'default' %}" alt="" />
+									<img class="image featured" src="{{ news.image.url }}" alt="" />
 									{% endif %}
 									<p style="word-break: break-all">{{ parsed_content|safe }}</p>
-									<a href="{% url 'news_output:edit_news' pk=news.pk %}">Редактировать</a>
+									<div>
+									{% for ai in ais %}
+										<img style="min-width: 180px; min-height: 120px; max-width: 500px; max-height: 400px" src="{{ ai.image.url }}" alt="" />
+									{% endfor %}
+									</div>
+									{% if news.author.pk == user.id %}
+									<div style="display: flex; justify-content: space-between">
+										<a href="{% url 'news_output:edit_news' pk=news.pk %}">Редактировать</a>
+										<a href="{% url 'news_output:delete_news' pk=news.pk %}">Удалить публикацию</a>
+									</div>
+									{% else %}
+									{% endif %}
 									<footer>
 										<ul class="stats">
 											<li><a href="#">General</a></li>
-											<li><a href="#" class="icon fa-heart">28</a></li>
-											<li><a href="#" class="icon fa-comment">128</a></li>
+											<li><a id='like_count' href="javascript:like_dislike('like', 'publication', '{{ news.id }}')" class="icon fa-thumbs-up">{{ news.like }}</a></li>
+											<li><a href="#" class="icon fa-comment">{{ news.comment_set.count }}</a></li>
+											<li><a id='dislike_count'  href="javascript:like_dislike('dislike', 'publication', '{{ news.id }}')" class="icon fa-thumbs-down">{{ news.dislike }}</a><span></span></li>
 										</ul>
 									</footer>
 								</article>
 						</div>
 						<div class="post">
-							<div style="display: flex; justify-content: space-between">
-								<h1>Комментарии 1</h1>
+							<div style="display: flex; justify-content: space-between; margin-bottom: 50px">
+								<div style="display: flex; justify-content: space-between; width: 25%; align-items: baseline">
+									<h1>Комментарии</h1>
+									<span style="color: blue; font-size: 18px; font-weight: bold">{{ news.comment_set.count }}</span>
+								</div>
 								<div style="display: flex">
 									<div style="margin-right: 20px">скопировать ссылку</div>
 									<div>подписаться на новые коментарии</div>
 								</div>
 							</div>
-							{% for i in rubrics%}
+							{% for comment in comments %}
 								<div style="margin-bottom: 50px">
 									<div style="display: flex">
-										<a href="/"><img src="sdaf" alt="фото пользователя"></a>
-										<h2>Имя пользователя</h2>
-										<span>дата публикации комментария</span>
+										<div style="display: flex; justify-content: space-between;">
+											<a href="/"><img src="/static/news_portal/images/avatar.jpg" alt="Фото пользователя"></a>
+											<h4 style="margin-left: 10px">{{ comment.author }}</h4>
+										</div>
+										<div style="margin-left: 40px">
+											<time class="published" >{{ comment.created_at|date:"d E Y В H:i" }}</time>
+										</div>
 									</div>
-									<p>Сам коммент</p>
-									<div>
-										<a><span>оценка коментария</span></a>
-										<a><span>ответить на коммент</span></a>
+									<p style="font-weight: bold">{{ comment.content }}</p>
+									<div id="form_blink{{ comment.id }}">
+										<a id='like_count{{ comment.id }}' href="javascript:like_dislike('like', 'comment', '{{comment.id}}')" class="icon fa-thumbs-up">{{ comment.like }}</a>
+										<a id='dislike_count{{ comment.id }}'  href="javascript:like_dislike('dislike',  'comment', '{{comment.id}}')" class="icon fa-thumbs-down">{{ comment.dislike }}</a>
+										<a><button style="box-shadow: none;" type="button" id="button{{ comment.id }}" onclick="form_move('{{ comment.id }}', '{{ comment.author.username }}', '{{ comment.id }}');">Ответить</button></a>
 										<a><span>скопировать ссылку</span></a>
 									</div>
 								</div>
+								{% for comment_sub in comments_sub %}
+								{% if comment_sub.main_comment  == comment.id %}
+									<div style="margin-left: 20px; margin-bottom: 50px">
+										<div style="display: flex">
+											<div style="display: flex; justify-content: space-between;">
+												<a href="/"><img src="/static/news_portal/images/avatar.jpg" alt="Фото пользователя"></a>
+												<h4 style="margin-left: 10px">{{ comment_sub.author }}</h4>
+											</div>
+											<div style="margin-left: 40px">
+												<time class="published" >{{ comment_sub.created_at|date:"d E Y В H:i" }}</time>
+											</div>
+										</div>
+										{% if comments_sub|index_for_comment_sub:forloop.counter0 == 0 or comment_sub.target_comment.pk == comment.id %}
+											<p style="font-weight: bold">{{ comment_sub.content }}</p>
+										{% else %}
+											<p style="font-weight: bold"> Ответ на комментарий пользователя: {{ comment_sub.target_comment.author.username }} от {{ comment_sub.target_comment.created_at }}</p>
+											<p style="font-weight: bold">{{ comment_sub.content }}</p>
+										{% endif %}
+										<div id="form_blink{{ comment_sub.id }}">
+											<a id='like_count{{ comment_sub.id }}' href="javascript:like_dislike('like', 'comment', '{{comment_sub.id}}')" class="icon fa-thumbs-up">{{ comment_sub.like }}</a>
+											<a id='dislike_count{{ comment_sub.id }}'  href="javascript:like_dislike('dislike',  'comment', '{{comment_sub.id}}')" class="icon fa-thumbs-down">{{ comment_sub.dislike }}</a>
+											<a><button style="box-shadow: none;" type="button" id="button{{ comment_sub.id }}" onclick="form_move('{{ comment_sub.id }}', '{{ comment_sub.author.username }}', '{{ comment_sub.main_comment }}');">Ответить</button></a>
+											<a><span>скопировать ссылку</span></a>
+										</div>
+									</div>
+								{% endif %}
+								{% endfor %}
 							{% endfor %}
+							<div id="form_resp">
+								<div id="comment" style="border-top: double; margin-top: 40px" >
+									{% if user.is_authenticated %}
+									<form  method="post">
+										{% csrf_token %}
+										{{ form.target_comment }}
+										{{ form.main_comment }}
+										{{ form.author.label.tag }}
+										{{ form.author }}
+										{{ form.news }}
+										<div style="display: flex; justify-content: space-between; align-items: center">
+											{{ form.content.label_tag }}
+											<button type="button" id="form_close" style="display: none; margin: 5px 0 5px 0;"><span style="font-size: 35px" aria-hidden="true">&times;</span></button>
+										</div>
+										{{ form.content }}
+										<button style="margin: 5px 0 5px 0;" type="submit">Отправить</button>
+									</form>
+									{% else %}
+									<p>Только зарегистрированные пользователи могут оставлять комментарии. <a href="{% url 'news_auth_registered:login' %}">Войдите,</a> пожалуйста.</p>
+									{% endif %}
+								</div>
+							</div>
 						</div>
 					</div>
+
+{% endblock %}
+
+
+					{% block content_author %}
+					<!-- Mini Posts -->
+							<section>
+								<h1>Ещё от автора</h1>
+								<div class="mini-posts">
+								{% for news_author in news_only_author %}
+									<!-- Mini Post -->
+										<article class="mini-post">
+											<header>
+												<h3><a href="{% url 'news_output:detail' pk=news_author.pk %}">{{ news_author.title }}</a></h3>
+												<time class="published">{{ news_author.published|date:"d E Y В H:i" }}</time>
+												<a href="#" class="author"><img src="{%  static 'news_portal/images/avatar.jpg' %}" alt="" /></a>
+											</header>
+											{% if news_author.image == None or news_author.image == '' %}
+											<a href="{% url 'news_output:detail' pk=news_author.pk %}" class="image featured"><img style="max-height: 270px" src="{% static 'news_portal/images/avatar.jpg' %}" alt="" /></a>
+											{% else %}
+											<a href="{% url 'news_output:detail' pk=news_author.pk %}" class="image featured"><img style="max-height: 270px" src="{{ news_author.image.url }}" alt="" /></a>
+											{% endif %}
+										</article>
+								{% endfor %}
+
+								</div>
+							</section>
+					{% endblock %}
+
+
+{% block js %}
+	<script>
+		var cc = document.getElementById('comment');
+		var form_close = document.getElementById('form_close');
+		var target_comment = document.getElementById('id_target_comment');
+		var title_body_comment = document.querySelector("[for=id_content]");
+		var target_maincomment = document.getElementById("id_main_comment");
+
+		function form_move(id, username, id_comment) {
+			$('#form_blink' + id).append(cc);
+			form_close.style.display = 'block';
+			target_comment.value = id;
+			title_body_comment.innerHTML = 'Ответить пользователю под ником: ' + username;
+			target_maincomment.value = id_comment;
+		}
+
+		form_close.onclick = function (){
+			$('#form_resp').append(cc);
+			form_close.style.display = 'none';
+			target_comment.value = '';
+			target_maincomment.value = '';
+			title_body_comment.innerHTML = 'Ваш комментарий:';
+		}
+
+		function like_dislike(type, target_comment,  id) {
+			$.post("{% url 'news_output:put_like_dislike' %}", {
+				type: type,
+				target_comment: target_comment,
+				id: id,
+			}).done(function(data) {
+					data = (data.split(','));
+					$('#like_count').html(Number($('#like_count').html()) + Number(data[0]));
+					$('#dislike_count').html(Number($('#dislike_count').html()) + Number(data[1]));
+			}).fail(function() {
+				alert('Error: Что-то пошло не так.');
+			});
+		}
+
+
+
+
+	</script>
 {% endblock %}

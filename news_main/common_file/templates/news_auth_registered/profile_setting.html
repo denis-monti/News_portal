@@ -1,0 +1,33 @@
+{% extends "layout/base.html" %}
+
+{% load static %}
+
+
+{% block content %}
+    <div>
+        <div class="post" style="text-align: center">
+            <h2>Настройка</h2>
+            <ul style="display: flex; list-style-type: none">
+                <li><span>текущий раздел</span></li>
+                <li><span>будущие разделы</span></li>
+                <li><span>будущие разделы</span></li>
+                <li><span>будущие разделы</span></li>
+            </ul>
+        </div>
+        <div id="main">
+            <article class="post">
+                <div>
+                    {{ extra_context.rubrics }}
+                    <h1><a href="{% url 'news_output:index' %}">Вернуться на главную</a></h1>
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <input type="hidden" name="next" value="{{ next }}">
+                        <input style="width: 100%" type="submit" value="Сохранить изменение">
+                    </form>
+                    <a href="{% url 'news_auth_registered:profile_delete' %}">Удалить профиль?</a>
+                </div>
+            </article>
+        </div>
+    </div>
+{% endblock %}
