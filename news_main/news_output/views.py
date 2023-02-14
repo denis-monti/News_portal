@@ -270,6 +270,13 @@ class NewsDetailView(DetailView, CreateView):
     template_name = 'news_output/news_detail.html'
     model = News
 
+
+
+
+
+
+
+
     def get_form(self, form_class=None):
         initial = {'news': self.kwargs['pk']}
         if self.request.user.is_authenticated:
@@ -326,19 +333,34 @@ class NewsDetailView(DetailView, CreateView):
             )
         return obj
 
+    def get_page_comment(self):
+        queryset = Comment.objects.filter(news=self.kwargs['pk'], is_active=True,
+                                                     target_comment=None).annotate(
+            like=Count('likedislike', filter=Q(likedislike__is_like=1)),
+            dislike=Count('likedislike', filter=Q(likedislike__is_dislike=1))).order_by('created_at')
+        paginator = Paginator(queryset, 2)
+        page = self.request.GET.get('page', 1)
+        comment_all = paginator.get_page(page)
+        return comment_all
+
     def get_context_data(self, **kwargs):
         parser = get_parser()
         context = super().get_context_data(**kwargs)
         # context['rubrics'] = Rubric.objects.all()
         context['parsed_content'] = parser.render(context['news'].description)
-
         print(context['news'])
         context['ais'] = context['object'].additionalimage_set.all()
-        context['comments'] = Comment.objects.filter(news=context['object'].id, is_active=True, target_comment=None).annotate(like=Count('likedislike', filter=Q(likedislike__is_like=1)), dislike=Count('likedislike', filter=Q(likedislike__is_dislike=1)))
-        context['comments_sub'] = Comment.objects.filter(news=context['object'].id, is_active=True).exclude(target_comment=None).annotate(like=Count('likedislike', filter=Q(likedislike__is_like=1)), dislike=Count('likedislike', filter=Q(likedislike__is_dislike=1)))
+        context['comments'] = Comment.objects.filter(news=context['object'].id, is_active=True, target_comment=None).annotate(like=Count('likedislike', filter=Q(likedislike__is_like=1)), dislike=Count('likedislike', filter=Q(likedislike__is_dislike=1))).order_by('created_at')
+        context['comments_sub'] = Comment.objects.filter(news=context['object'].id, is_active=True).exclude(target_comment=None).annotate(like=Count('likedislike', filter=Q(likedislike__is_like=1)), dislike=Count('likedislike', filter=Q(likedislike__is_dislike=1))).order_by('created_at')
         context['news_only_author'] = News.objects.filter(author=context['object'].author.pk)
         context['like'] = LikeDislike.objects.filter(news=context['object'].id, is_like=1).count()
         context['dislike'] = LikeDislike.objects.filter(news=context['object'].id, is_dislike=1).count()
+        # comment = Comment.objects.filter(news=context['object'].id, is_active=True)
+        # page: int = self.request.GET.get('page', 1)
+        # p = Paginator(comment, 5)
+        # context['page_comment'] = p.get_page(page)
+        comment = self.get_page_comment()
+        context['page_comment'] = comment
          # date = datetime.today()
         # week = date.strftime("%V")
         # context['news_week_more_views'] = News.objects.filter(published__week=week)

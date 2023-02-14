@@ -19,7 +19,7 @@ urlpatterns = [
     path('accounts/password_change/done/', PasswordChangeDoneView.as_view(template_name="news_auth_registered/change_password_done.html", extra_context={'auth': 0}), name='password_change_done'),
     path('accounts/password_reset/', PasswordResetSend.as_view(), name='password_reset'),
     path('accounts/password_reset/done', PasswordResetDoneView.as_view(template_name='news_auth_registered/email_sent.html', extra_context={'auth': 0}),  name='password_reset_done'),
-    path('accounts/reset/<uidb64>/<token>/', PasswordResetConfirmView.as_view(template_name='news_auth_registered/password_reset_confirm.html', extra_context={'auth': 0}), name='password_reset_confirm'),
+    path('accounts/reset/<uidb64>/<token>/', PasswordResetConfirmView.as_view(template_name='news_auth_registered/password_reset_confirm.html', extra_context={'auth': 0}, success_url=reverse_lazy("news_auth_registered:password_reset_complete")), name='password_reset_confirm'),
     path('accounts/reset/done/', PasswordResetCompleteView.as_view(template_name="news_auth_registered/password_confirmed.html", extra_context={'auth': 0}), name='password_reset_complete'),
     path('accounts/profile/delete/', DeleteUserView.as_view(), name='profile_delete'),
     path('accounts/profile/setting/', ProfileSetting.as_view(), name='profile_setting'),

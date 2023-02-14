@@ -60,7 +60,7 @@
 									<div>подписаться на новые коментарии</div>
 								</div>
 							</div>
-							{% for comment in comments %}
+							{% for comment in page_comment %}
 								<div style="margin-bottom: 50px">
 									<div style="display: flex">
 										<div style="display: flex; justify-content: space-between;">
@@ -130,6 +130,22 @@
 								</div>
 							</div>
 						</div>
+
+						<ul class="pagination_button_center actions pagination">
+							{% if page_comment.has_previous %}
+							<li><a class="button_mobile button big previous button" href="?page={{ page_comment.previous_page_number }}"></a></li>
+							{% else %}
+							<li><a class="button_mobile disabled big previous button" href=""></a></li>
+							{% endif %}
+							&nbsp; &nbsp; | &nbsp; &nbsp;
+							Страницы {{ page_comment.number }} из {{ page_comment.paginator.num_pages }}
+							&nbsp; &nbsp; | &nbsp; &nbsp;
+							{% if page_comment.has_next %}
+							<li><a  class="button_mobile button big next" href="?page={{ page_comment.next_page_number }} "></a></li>
+							{% else %}
+							<li><a class="button_mobile disabled big next button" href=""></a></li>
+							{% endif %}
+						</ul>
 					</div>
 
 {% endblock %}

@@ -32,11 +32,13 @@ class PasswordResetCustomForm(forms.ModelForm):
             if not AdvUser.objects.exclude(email=email):
                 raise ValidationError('Пользователь с данным email не найден',
                                       code='email_user_not_found')
+        user = AdvUser.objects.get(email=email)
+        reset_password.send(PasswordResetCustomForm, instance=user)
         return email
 
     def save(self, commit=False, *args, **kwargs):
-        t = super().save(commit=False)
-        reset_password.send(PasswordResetCustomForm, instance=t)
+        user = super().save(commit=False)
+
 
     # def save(self, commit=True):
     #     user = super().save(commit=False)

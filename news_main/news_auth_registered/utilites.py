@@ -1,4 +1,7 @@
 from django.template.loader import render_to_string
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
 from django.core.signing import Signer
 # from datetime import datetime
 # from os.path import splitext
@@ -27,7 +30,8 @@ def send_reset_password(user):
         host = 'http://' + ALLOWED_HOSTS[0]
     else:
         host = 'http://localhost:8000'
-    context = {'user': user, 'host': host, 'sign': signer.sign(user.username)}
+    context = {'user': user, 'host': host, 'uid': urlsafe_base64_encode(force_bytes(user.pk)), 'token': default_token_generator.make_token(user),
+               'domain': host}
     subject = render_to_string('email/reset_subject.txt', context)
     body_text = render_to_string('email/reset_email.txt', context)
     user.email_user(subject, body_text)
