@@ -1,7 +1,7 @@
 from django import forms
 from captcha.fields import CaptchaField
 # from localflavor.ru.forms import RUPassportNumberField
-from .models import AdvUser
+from .models import *
 from django.core import validators
 from django.contrib.auth import password_validation
 from django.core.exceptions import ValidationError
@@ -71,9 +71,9 @@ class RegisterUserForm(forms.ModelForm):
         email = self.cleaned_data['email']
         if email:
             validate_email(email)
-            if AdvUser.objects.filter(email=email):
-                raise ValidationError('Пользователь с данным email уже зарегистрирован, попробуйте восстановить пароль',
-                    code='email_already_exists')
+            # if AdvUser.objects.filter(email=email):
+            #     raise ValidationError('Пользователь с данным email уже зарегистрирован, попробуйте восстановить пароль',
+            #         code='email_already_exists')
         return email
 
     def clean(self):
@@ -99,3 +99,12 @@ class RegisterUserForm(forms.ModelForm):
         model = AdvUser
         fields = ('username', 'email', 'password1', 'password2',
                   'first_name', 'last_name', 'send_messages')
+
+
+class SendMessage(forms.ModelForm):
+
+
+    class Meta:
+        model = Message
+        fields = ('message',)
+        widgets = {'author': forms.HiddenInput}

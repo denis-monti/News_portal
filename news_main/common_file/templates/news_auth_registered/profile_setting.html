@@ -21,9 +21,29 @@
                     <h1><a href="{% url 'news_output:index' %}">Вернуться на главную</a></h1>
                     <form method="post">
                         {% csrf_token %}
-                        {{ form.as_p }}
+                        {% for field in form.visible_fields %}
+                                {% if field.errors %}
+                            <ul>
+                              {% for error in field.errors %}
+                              <li><em>{{ error|escape }}</em></li>
+                              {% endfor %}
+                            </ul>
+                            {% endif %}
+                            {{ field.attrs }}
+                            {% if field.name == "send_messages" %}
+                                <p style="display: flex">{{ field.label_tag }}
+                                     <span style="margin-top: 5px">{{ field }}<span>
+                                     {{ field.help_text }}
+                                </p>
+                            {% else %}
+                                <p>{{ field.label_tag }}
+                                     {{ field }}
+                                     {{ field.help_text }}
+                                </p>
+                            {% endif %}
+                        {% endfor %}
                         <input type="hidden" name="next" value="{{ next }}">
-                        <input style="width: 100%" type="submit" value="Сохранить изменение">
+                        <input class="button_size_auth" type="submit" value="Сохранить изменение">
                     </form>
                     <a href="{% url 'news_auth_registered:profile_delete' %}">Удалить профиль?</a>
                 </div>

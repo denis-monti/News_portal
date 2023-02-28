@@ -11,9 +11,29 @@
             <h1>Регистрация нового пользователя</h1>
             <form method="post">
                 {% csrf_token %}
-                {{ form.as_p }}
+                {% for field in form.visible_fields %}
+                        {% if field.errors %}
+                    <ul>
+                      {% for error in field.errors %}
+                      <li><em>{{ error|escape }}</em></li>
+                      {% endfor %}
+                    </ul>
+                    {% endif %}
+                        {% if field.field.required %}
+                            <p>{{ field.label_tag }}
+                                 {{ field }}
+                                 {{ field.help_text }}
+                            </p>
+                        {% else %}
+                            <p>{{ field.label_tag }}
+                                <span>Не обязательноe поле для заполнения</span>
+                                 {{ field }}
+                                 {{ field.help_text }}
+                            </p>
+                        {% endif %}
+                {% endfor %}
                 <input type="hidden" name="next" value="{{ next }}">
-                <input style="width: 100%" type="submit" value="Зарегистрироваться">
+                <input class="button_size_auth" type="submit" value="Зарегистрироваться">
             </form>
         </div>
     </article>

@@ -1,0 +1,272 @@
+{% extends "layout/base.html" %}
+
+{% load static %}
+{% load filtersandtags %}
+{% load thumbnail %}
+
+
+{% block content %}
+				<!-- Main -->
+					<div style="display: flex">
+						<div style="width: 69%; margin-bottom: 15px">
+							<div class="post_profile_info">
+								<div style="display: flex; justify-content: space-between">
+									<div class="about_the_author">
+										<div>
+											<a href="#" class="author"><img src="{% static 'news_portal/images/avatar.jpg' %}" alt="" /></a>
+										</div>
+										<div style="display: flex; flex-direction: column; margin-left: 15px">
+											<span style="text-align: center; font-weight: bold">5</span>
+											<span>Карма</span>
+										</div>
+										<div style="display: flex; flex-direction: column; margin-left: 15px">
+											<span style="text-align: center; font-weight: bold">50</span>
+											<span>Рейтинг</span>
+										</div>
+									</div>
+									{% if user.pk != user_detail.pk %}
+									<div>
+										<a href="{% url 'news_auth_registered:private_dialog' slug=user_detail.slug %}">Отправить сообщение</a>
+										<a>Подписаться</a>
+									</div>
+									{% else %}
+									{% endif %}
+								</div>
+									<p style="font-weight: bold; font-size: 20px">{{ user_detail.first_name }}  {{ user_detail.last_name }}   <a style="color: cadetblue" href="{% url 'news_output:users_info' slug=user_detail.slug %}">@{{ user_detail.slug }}</a></p>
+								<div style="margin-bottom: 5px">
+									<a href="{% url 'news_output:users_info' slug=user_detail.slug %}" class="nav_profile">Профиль</a>
+									<a href="{% url 'news_output:users_info_section' slug=user_detail.slug section='news' %}" class="nav_profile">Публикации {{ user_detail.news_set.count }}</a>
+									<a href="{% url 'news_output:users_info_section' slug=user_detail.slug section='comment' %}" class="nav_profile">Комментарии {{ user_detail.comment_set.count }}</a>
+									<a href="{% url 'news_output:users_info_section' slug=user_detail.slug section='favourites_posts' %}" class="nav_profile">Закладки</a>
+									<a href="{% url 'news_output:users_info_section' slug=user_detail.slug section='following' %}" class="nav_profile">Подписки {{ following_count }}</a>
+									<a href="{% url 'news_output:users_info_section' slug=user_detail.slug section='followers' %}" class="nav_profile">Подписчики  {{ followers_count }}</a>
+								</div>
+							</div>
+							<div style="height: 100%;">
+								{% if type_data == 'news' %}
+									{% for news in data %}
+										<article class="post">
+											<header>
+												<div class="title">
+													<h2><a href="{% url 'news_output:detail' pk=news.pk %}">{{ news.title }}</a></h2>
+													<p>Статья из раздела: {{ news.rubric.super_rubric }}(<a href="{{ news.rubric.get_absolute_url }}">{{ news.rubric.name }}</a>)</p>
+												</div>
+												<div class="meta">
+													<time class="published" >{{ news.published|date:"d E Y" }}</time>
+													<time class="published" >{{ news.published|date:"В H:i" }}</time>
+													<div>
+														<a href="{% url 'news_output:users_info' slug=user_detail.slug %}" class="author"><span class="name">{{ news.author }}</span><img src="{% static 'news_portal/images/avatar.jpg' %}" alt="" /></a>
+													</div>
+												</div>
+											</header>
+											{% if news.image == None or news.image == '' %}
+											<a href="#" class="image featured"><img src="{% static 'news_portal/images/pic01.jpg' %}" alt="" /></a>
+											{% else %}
+											<img class="image featured" src="{{ news.image.url }}" alt="" />
+											{% endif %}
+											<p>{{ news.description|truncatewords:10 }}</p>
+											<footer>
+												<ul class="actions">
+													<li><a href="{% url 'news_output:detail' pk=news.pk %}" class="button big">Читать далее</a></li>
+												</ul>
+												<ul class="stats">
+													<li><span  class="icon fa-thumbs-up">{{ news.like }}</span></li>
+													<li><span href="#" class="icon fa-comment">{{ news.comment_set.count }}</span></li>
+													<li><span href="#" class="icon fa-thumbs-down">{{ news.dislike }}</span></li>
+												</ul>
+											</footer>
+										</article>
+									{% endfor %}
+									<ul class="pagination_button_center actions pagination">
+										{% if page_obj.has_previous %}
+										<li><a class="button_mobile button big previous button" href="?page={{ page_obj.previous_page_number }}"></a></li>
+										{% else %}
+										<li><a class="button_mobile disabled big previous button" href=""></a></li>
+										{% endif %}
+										<span>
+										&nbsp; &nbsp;
+										Стр {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
+											 &nbsp; &nbsp;
+										{% if page_obj.has_next %}
+										</span>
+										<li><a  class="button_mobile button big next" href="?page={{ page_obj.next_page_number }} "></a></li>
+										{% else %}
+										<li><a class="button_mobile disabled big next button" href=""></a></li>
+										{% endif %}
+									</ul>
+								{% elif type_data == 'comment' %}
+									{% for comment in data %}
+									<article class="post_profile_info">
+											<div>
+												<h2 style="border-bottom: 1px solid #dfe8ea; padding: 0 0 10px 0px;"><a href="{% url 'news_output:detail' pk=comment.news.pk %}">{{ comment.news }}</a></h2>
+											</div>
+											<div style="display: flex">
+												<div style="display: flex; justify-content: space-between;">
+													<a href="/"><img src="/static/news_portal/images/avatar.jpg" alt="Фото пользователя"></a>
+													<h4 style="margin-left: 10px">{{ comment.author }}</h4>
+												</div>
+												<div style="margin-left: 40px">
+													<time class="published" >{{ comment.created_at|date:"d E Y В H:i" }}</time>
+												</div>
+											</div>
+											<p style="font-weight: bold">{{ comment.content }}</p>
+											<div id="form_blink{{ comment.id }}">
+												<span id='like_count{{ comment.id }}'  class="icon fa-thumbs-up">  {{ comment.like }}</span>
+												<span id='dislike_count{{ comment.id }}'  class="icon fa-thumbs-down">  {{ comment.dislike }}</span>
+												<a href="{% url 'news_output:detail_all_comment' pk=comment.news.pk%}#comment_{{ comment.pk }}">Посмотреть</a>
+												<a><span>скопировать ссылку</span></a>
+											</div>
+									</article>
+									{% endfor %}
+									<ul class="pagination_button_center actions pagination">
+										{% if page_obj.has_previous %}
+										<li><a class="button_mobile button big previous button" href="?page={{ page_obj.previous_page_number }}"></a></li>
+										{% else %}
+										<li><a class="button_mobile disabled big previous button" href=""></a></li>
+										{% endif %}
+										<span>
+										&nbsp; &nbsp;
+										Стр {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
+											 &nbsp; &nbsp;
+										{% if page_obj.has_next %}
+										</span>
+										<li><a  class="button_mobile button big next" href="?page={{ page_obj.next_page_number }} "></a></li>
+										{% else %}
+										<li><a class="button_mobile disabled big next button" href=""></a></li>
+										{% endif %}
+									</ul>
+								{% elif type_data == 'following' %}
+									<article class="post_profile_info">
+											<div style=" display:flex; justify-content: space-between; border-bottom: 1px solid #dfe8ea">
+												<span>имя</span>
+												<div style="display: flex; width: 30%; justify-content: space-between">
+													<span>рейтинг</span>
+													<span>карма</span>
+												</div>
+											</div>
+											{% for following in data %}
+											<div style="display: flex; justify-content: space-between; margin-top: 20px">
+												<div style="display: flex">
+													<a style="border: none" href="{% url 'news_output:users_info' slug=following.followers.slug %}"><img src="/static/news_portal/images/avatar.jpg" alt="Фото пользователя"></a>
+													<div style="display: flex; justify-content: space-between; flex-direction: column; margin-left: 15px">
+														<span style="font-weight: bold; font-size: 20px; margin-bottom: 15px"><a href="{% url 'news_output:users_info' slug=following.followers.slug %}">{{ following.followers.first_name }}  {{ following.followers.last_name }}</a>  <a style="color: cadetblue" href="{% url 'news_output:users_info' slug=following.followers.slug %}">@{{ following.followers.slug }}</a></span>
+														<span>Специализация в будущем будет добавлена</span>
+														<span><a style="color: cadetblue" href="{% url 'news_output:detail' pk=103%}">{{ following.followers.news_set.latest }}</a> {{ following.followers.news_set.latest.published|date:"d E Y в H:i" }}</span>
+													</div>
+												</div>
+												<div style="margin-left: 40px; width: 24%; justify-content: space-between; display: flex;">
+														<span style="color: blueviolet">0</span>
+														<span style="color: #579311 ">5</span>
+												</div>
+											</div>
+											{% endfor %}
+									</article>
+											<ul class="pagination_button_center actions pagination">
+												{% if page_obj.has_previous %}
+												<li><a class="button_mobile button big previous button" href="?page={{ page_obj.previous_page_number }}"></a></li>
+												{% else %}
+												<li><a class="button_mobile disabled big previous button" href=""></a></li>
+												{% endif %}
+												<span>
+												&nbsp; &nbsp;
+												Стр {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
+													 &nbsp; &nbsp;
+												{% if page_obj.has_next %}
+												</span>
+												<li><a  class="button_mobile button big next" href="?page={{ page_obj.next_page_number }} "></a></li>
+												{% else %}
+												<li><a class="button_mobile disabled big next button" href=""></a></li>
+												{% endif %}
+											</ul>
+								{% elif type_data == 'followers' %}
+									<article class="post_profile_info">
+											<div style=" display:flex; justify-content: space-between; border-bottom: 1px solid #dfe8ea">
+												<span>имя</span>
+												<div style="display: flex; width: 30%; justify-content: space-between">
+													<span>рейтинг</span>
+													<span>карма</span>
+												</div>
+											</div>
+											{% for followers in data %}
+											<div>
+												<h2 style="border-bottom: 1px solid #dfe8ea; padding: 0 0 10px 0px;"><a href="/">{{ followers.name }}</a></h2>
+											</div>
+											<div style="display: flex; justify-content: space-between">
+												<div style="display: flex">
+													<a style="border: none" href="{% url 'news_output:users_info' slug=followers.user_id.slug %}"><img src="/static/news_portal/images/avatar.jpg" alt="Фото пользователя"></a>
+													<div style="display: flex; justify-content: space-between; flex-direction: column; margin-left: 15px">
+														<span style="font-weight: bold; font-size: 20px; margin-bottom: 15px"><a href="{% url 'news_output:users_info' slug=followers.user_id.slug %}">{{ followers.user_id.first_name }}  {{ followers.user_id.last_name }}</a>  <a style="color: cadetblue" href="{% url 'news_output:users_info' slug=followers.user_id.slug %}">@{{ followers.user_id.slug }}</a></span>
+														<span>Специализация в будущем будет добавлена</span>
+														<span>Послденяя публикация: время</span>
+													</div>
+												</div>
+												<div style="margin-left: 40px; width: 24%; justify-content: space-between; display: flex;">
+														<span style="color: blueviolet">0</span>
+														<span style="color: #579311 ">5</span>
+												</div>
+											</div>
+											{% endfor %}
+									</article>
+											<ul class="pagination_button_center actions pagination">
+												{% if page_obj.has_previous %}
+												<li><a class="button_mobile button big previous button" href="?page={{ page_obj.previous_page_number }}"></a></li>
+												{% else %}
+												<li><a class="button_mobile disabled big previous button" href=""></a></li>
+												{% endif %}
+												<span>
+												&nbsp; &nbsp;
+												Стр {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
+													 &nbsp; &nbsp;
+												{% if page_obj.has_next %}
+												</span>
+												<li><a  class="button_mobile button big next" href="?page={{ page_obj.next_page_number }} "></a></li>
+												{% else %}
+												<li><a class="button_mobile disabled big next button" href=""></a></li>
+												{% endif %}
+											</ul>
+								{% else %}
+									<article class="post_profile_info">
+											<div>
+												<p style="font-weight: bold">Значки</p>
+												<span>которых нет</span>
+											</div>
+											<div>
+												<p style="font-weight: bold">О себе</p>
+											</div>
+											<div>
+												<p>Мы переживаем ситуацию, когда текст сам по себе, текст, не подписанный автором, является в каком–то
+												смысле «слепым». Мы его не можем оценить, не зная, что собой представляет автор, какова его
+													эстетическая концепция, где он живёт, сколько ему лет, и так далее.</p>
+
+												<p>Сейчас, когда текст в каком–то смысле утратил единые качественные критерии, роль автора важна как
+													никогда. Фактор авторства, может быть, существеннее, чем фактор текста.</p>
+
+												<p style="font-weight: bold" >Лев Рубинштейн</p>
+											</div>
+									</article>
+								{% endif %}
+							</div>
+						</div>
+						<div  class="right_block_ad_main" style="width: 30%; margin-left: 1%; margin-bottom: 125px">
+							<div>
+								<div class="post_profile_info">
+									<div class="about_the_author" style="flex-direction: column">
+										<div>
+											<h2 style="border-bottom: 1px solid #dfe8ea; padding: 0 0 10px 0px;">Информация</h2>
+										</div>
+										<div style="display: flex; justify-content: space-between; flex-direction: column">
+												<div style="display: flex; width: 100%; justify-content: space-between;"><p style="width: 35%; font-weight: bold;">В рейтинге</p><p style="width: 50%">Пока такой информации нет</p></div>
+												<div style="display: flex; width: 100%; justify-content: space-between;"><p style="width: 35%; font-weight: bold;">Откуда</p><p style="width: 50%">Пока такой информации нет</p></div>
+												<div style="display: flex; width: 100%; justify-content: space-between;"><p style="width: 35%; font-weight: bold;">Дата рождения</p><p style="width: 50%">Пока такой информации нет</p></div>
+												<div style="display: flex; width: 100%; justify-content: space-between;"><p style="width: 35%; font-weight: bold;">Зарегистрирован</p><p style="width: 50%">{{ user_detail.date_joined|date:"d E Y" }}</p></div>
+												<div style="display: flex; width: 100%; justify-content: space-between;"><p style="width: 35%; font-weight: bold;">Активность</p><p style="width: 50%">{{ user_detail.last_login }}</p></div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+{% endblock %}
+
+{% block js %}
+{% endblock %}

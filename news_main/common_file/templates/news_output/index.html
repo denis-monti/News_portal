@@ -10,8 +10,8 @@
 
 	<!-- Post -->
 	<div class="post">
-		<div style="display: flex; justify-content: space-evenly">
-			<div style="display: flex; justify-content: space-around">
+		<div class="type_sorting_block">
+			<div>
 				<div style="width: 25%"><a href="{% url 'news_output:index_sort' type_sort='best' %}">Лучшее</a></div>
 				<div><a href="{% url 'news_output:index_sort' type_sort='published' %}">По убыванию даты публикации</a></div>
 				<div><a href="{% url 'news_output:index_sort' type_sort='-published' %}">По возрастанию даты публикации</a></div>
@@ -35,25 +35,25 @@
 				<header>
 					<div class="title">
 						<h2><a href="{% url 'news_output:detail' pk=news.pk %}">{{ news.title }}</a></h2>
-						<p>Lorem ipsum dolor amet nullam consequat etiam feugiat</p>
+						<p>Статья из раздела: {{ news.rubric.super_rubric }}({{ news.rubric.name }})</p>
 					</div>
 					<div class="meta">
-						<time class="published" datetime="2015-11-01">{{ news.published|date:"d E Y В H:i" }}</time>
+						<time class="published" >{{ news.published|date:"d E Y" }}</time>
+						<time class="published" >{{ news.published|date:"В H:i" }}</time>
 						<a href="#" class="author"><span class="name">{{ news.author }}</span><img src="{% static 'news_output/images/avatar.jpg' %}" alt="" /></a>
 					</div>
 				</header>
 				{% if news.image == None or news.image == '' %}
 				<a href="#" class="image featured"><img src="{% static 'news_portal/images/pic01.jpg' %}" alt="" /></a>
 				{% else %}
-				<img src="{{ news.image.url }}" alt="" />
+				<img class="image featured" src="{{ news.image.url }}" alt="" />
 				{% endif %}
 				<p>{{ news.description|truncatewords:10 }}</p>
 				<footer>
 					<ul class="actions">
-						<li><a href="{% url 'news_output:detail' pk=news.pk %}" class="button big">Continue Reading</a></li>
+						<li><a href="{% url 'news_output:detail' pk=news.pk %}" class="button big">Читать далее</a></li>
 					</ul>
 					<ul class="stats">
-						<li><a href="#">General</a></li>
 						<li><span  class="icon fa-thumbs-up">{{ news.like }}</span></li>
 						<li><span href="#" class="icon fa-comment">{{ news.comment_set.count }}</span></li>
 						<li><span href="#" class="icon fa-thumbs-down">{{ news.dislike }}</span></li>
@@ -73,10 +73,12 @@
 			{% else %}
 			<li><a class="button_mobile disabled big previous button" href=""></a></li>
 			{% endif %}
-			&nbsp; &nbsp; | &nbsp; &nbsp;
-			Страницы {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
-			&nbsp; &nbsp; | &nbsp; &nbsp;
+			<span>
+			&nbsp; &nbsp;
+			Стр {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
+				 &nbsp; &nbsp;
 			{% if page_obj.has_next %}
+			</span>
 			<li><a  class="button_mobile button big next" href="?page={{ page_obj.next_page_number }} "></a></li>
 			{% else %}
 			<li><a class="button_mobile disabled big next button" href=""></a></li>

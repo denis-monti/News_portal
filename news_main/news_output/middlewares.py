@@ -1,5 +1,6 @@
 from .models import News, SubRubric
 from datetime import datetime
+from django.db.models import Q, Count
 
 
 class RubricsMiddleware:
@@ -17,9 +18,7 @@ class RubricsMiddleware:
         response.context_data['rubrics'] = SubRubric.objects.all()
         date = datetime.today()
         week = date.strftime("%V")
-        response.context_data['news_week_more_views'] = News.objects.filter(published__week=week)
+        response.context_data['news_week_more_views'] = News.objects.filter(published__week=week).annotate(active=Count('likedislike', filter=Q(likedislike__target_comment=None))).filter(active__gt=1)[:5]
 
         return response
 
-def rubrics(request):
-    return {'rubrics': SubRubric.objects.all()}

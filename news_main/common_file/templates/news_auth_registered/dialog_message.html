@@ -1,0 +1,73 @@
+{% extends "layout/base.html" %}
+
+{% load static %}
+{% load filtersandtags %}
+{% load thumbnail %}
+
+
+{% block content %}
+				<!-- Main -->
+					<div style="display: flex; width: 60%">
+							<article class="post" style="width: 100%">
+								<header>
+									<div class="title">
+										<div style="display: flex">
+											<span style="display: flex; align-items: center; margin-right: 15px; font-size: x-large"><i class="fa fa-arrow-left" aria-hidden="true"></i></span>
+											<a href="#" class="author"><img src="{% static 'news_portal/images/avatar.jpg' %}" alt="" /></a>
+											<div style="display: flex; flex-direction: column; margin-left: 15px">
+												<span style="font-weight: bold; font-size: 20px; margin-bottom: 10px">{{ user_detail.first_name }}  {{ user_detail.last_name }}   <a style="color: cadetblue" href="{% url 'news_output:users_info' slug=user_detail.slug %}">@{{ user_detail.slug }}</a></span>
+												<span>Пользователь</span>
+											</div>
+										</div>
+									</div>
+								</header>
+								<div style="overflow: auto; height: 60%">
+									{% for message in data %}
+										{% if message.author == user %}
+										<div style="margin-bottom: 25px">
+											<div style="display: flex; align-items: center">
+												<a href="#" class="author"><img src="{% static 'news_portal/images/avatar.jpg' %}" alt="" /></a>
+												<span style="font-weight: bold; font-size: 20px; margin-left: 10px">{{ message.author.first_name }}  {{ message.author.last_name }}   <a style="color: cadetblue" href="{% url 'news_output:users_info' slug=message.author.slug %}">@{{ message.author.slug }}</a></span>
+												<time class="published" >{{ message.pub_date|date:"d E Y в H:i" }}</time>
+											</div>
+											<div style="margin-top:15px">{{ message }}</div>
+										</div>
+										{% else %}
+										<div style="margin-bottom: 25px; display: flex; justify-content: end">
+											<div style="display: flex; flex-direction: column">
+												<div style="display: flex; align-items: center">
+													<a href="#" class="author"><img src="{% static 'news_portal/images/avatar.jpg' %}" alt="" /></a>
+													<span style="font-weight: bold; font-size: 20px; margin-left: 10px"><a style="color: cadetblue" href="{% url 'news_output:users_info' slug=message.author.slug %}">@{{ message.author.slug }}</a>{{ message.author.first_name }}  {{ message.author.last_name }} </span>
+													<time class="published" >{{ message.pub_date|date:"d E Y в H:i" }}</time>
+												</div>
+												<div>
+													<div style="margin-top:15px">{{ message }}</div>
+												</div>
+											</div>
+										</div>
+										{% endif %}
+									{% endfor %}
+								</div>
+									<form class="all_width_block" style="display: flex; height: 23%">
+										<textarea onchange="toggleButton()" id='text_field' class="dialog_textarea" placeholder="Ваше сообщение"></textarea>
+										<button  id="submitButton" disabled='disabled' class="dialog_button" type="submit">Отправить</button>
+									</form>
+							</article>
+					</div>
+
+{% endblock %}
+
+{% block js %}
+<script>
+	function toggleButton()
+            {
+                var textarea = document.getElementById('text_field').value;
+
+                if (textarea) {
+                    document.getElementById('submitButton').disabled = false;
+                } else {
+                    document.getElementById('submitButton').disabled = true;
+                }
+            }
+</script>
+{% endblock %}

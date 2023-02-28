@@ -5,14 +5,14 @@
 {% block title %}Удаление пользователя{% endblock %}
 
 {% block content %}
-<div style="margin-left: auto; margin-right: auto; width: 45%">
+<div class="register_active">
 	<div id="main">
 		<article class="post">
 			<div>
 				<h2>Удаление пользователя {{ object.username }}</h2>
                 <form method="post">
                     {% csrf_token %}
-					<input style="width: 100%" type="submit" value="Удалить навсегда">
+					<input class="button_size_auth" type="submit" value="Удалить навсегда">
                 </form>
 			</div>
 		</article>

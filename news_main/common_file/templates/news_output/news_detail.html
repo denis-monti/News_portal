@@ -13,31 +13,35 @@
 								<article class="post">
 									<header>
 										<div class="title">
-											<h2><a href="#">{{ news.title }}</a></h2>
+											<h2><a href="{% url 'news_output:detail' pk=news.pk %}">{{ news.title }}</a></h2>
 											<p>Lorem ipsum dolor amet nullam consequat etiam feugiat</p>
 										</div>
 										<div class="meta">
-											<time class="published" >{{ news.published|date:"d E Y В H:i" }}</time>
-											<a href="#" class="author"><span class="name">{{ news.author }}</span><img src="{% static 'news_output/images/avatar.jpg' %}" alt="" /></a>
+											<time class="published" >{{ news.published|date:"d E Y" }}</time>
+											<time class="published" >{{ news.published|date:"В H:i" }}</time>
+											<a href="{% url 'news_output:detail' pk=news.pk %}" class="author"><span class="name">{{ news.author }}</span><img src="{% static 'news_portal/images/avatar.jpg' %}" alt="" /></a>
 										</div>
 									</header>
-									{% if news.image == None or news.image == '' %}
-									<a href="#" class="image featured"><img src="{% static 'news_portal/images/pic01.jpg' %}" alt="" /></a>
-									{% else %}
-									<img class="image featured" src="{{ news.image.url }}" alt="" />
-									{% endif %}
-									<p style="word-break: break-all">{{ parsed_content|safe }}</p>
-									<div>
-									{% for ai in ais %}
-										<img style="min-width: 180px; min-height: 120px; max-width: 500px; max-height: 400px" src="{{ ai.image.url }}" alt="" />
-									{% endfor %}
-									</div>
-									{% if news.author.pk == user.id %}
-									<div style="display: flex; justify-content: space-between">
-										<a href="{% url 'news_output:edit_news' pk=news.pk %}">Редактировать</a>
-										<a href="{% url 'news_output:delete_news' pk=news.pk %}">Удалить публикацию</a>
-									</div>
-									{% else %}
+									{% if only_comment == True %}
+									{% elif only_comment == False %}
+										{% if news.image == None or news.image == '' %}
+										<a href="#" class="image featured"><img src="{% static 'news_portal/images/pic01.jpg' %}" alt="" /></a>
+										{% else %}
+										<img class="image featured" src="{{ news.image.url }}" alt="" />
+										{% endif %}
+										<p style="word-break: break-all">{{ parsed_content|safe }}</p>
+										<div>
+										{% for ai in ais %}
+											<img style="min-width: 180px; min-height: 120px; max-width: 500px; max-height: 400px" src="{{ ai.image.url }}" alt="" />
+										{% endfor %}
+										</div>
+										{% if news.author.pk == user.id %}
+										<div style="display: flex; justify-content: space-between">
+											<a href="{% url 'news_output:edit_news' pk=news.pk %}">Редактировать</a>
+											<a href="{% url 'news_output:delete_news' pk=news.pk %}">Удалить публикацию</a>
+										</div>
+										{% else %}
+										{% endif %}
 									{% endif %}
 									<footer>
 										<ul class="stats">
@@ -49,6 +53,38 @@
 									</footer>
 								</article>
 						</div>
+					{% if only_comment == True %}
+					{% elif only_comment == False %}
+						<div class="post" style="display: flex; justify-content: space-between">
+							<div>
+								<div class="about_the_author">
+									<div>
+										<a href="#" class="author"><img src="{% static 'news_portal/images/avatar.jpg' %}" alt="" /></a>
+									</div>
+									<div style="display: flex; flex-direction: column; margin-left: 15px">
+										<span style="text-align: center; font-weight: bold">5</span>
+										<span>Карма</span>
+									</div>
+									<div style="display: flex; flex-direction: column; margin-left: 15px">
+										<span style="text-align: center; font-weight: bold">50</span>
+										<span>Рейтинг</span>
+									</div>
+								</div>
+								<p>{{ news.author.first_name }}  {{ news.author.last_name }}   <a href="">@{{ news.author }}</a></p>
+							</div>
+							{% if user.pk != news.author.pk and user.is_authenticated %}
+							<div style="width: 25%; display: flex; justify-content: space-between">
+								<a href="" class="fa fa-envelope email_icon"></a>
+								{% if subrciption == True %}
+								<button class="button_subcribe" id="subscribe" onclick="javascript:subscription('{{ news.author.id }}', '{{user.id}}')">Отписаться</button>
+								{% else %}
+								<button class="button_subcribe" id="subscribe" onclick="javascript:subscription('{{ news.author.id }}', '{{user.id}}')">Подписаться</button>
+								{% endif %}
+							</div>
+							{% else %}
+							{% endif %}
+						</div>
+					{% endif %}
 						<div class="post">
 							<div style="display: flex; justify-content: space-between; margin-bottom: 50px">
 								<div style="display: flex; justify-content: space-between; width: 25%; align-items: baseline">
@@ -61,7 +97,7 @@
 								</div>
 							</div>
 							{% for comment in page_comment %}
-								<div style="margin-bottom: 50px">
+								<div id="comment_{{ comment.id }}" style="margin-bottom: 50px">
 									<div style="display: flex">
 										<div style="display: flex; justify-content: space-between;">
 											<a href="/"><img src="/static/news_portal/images/avatar.jpg" alt="Фото пользователя"></a>
@@ -81,13 +117,13 @@
 								</div>
 								{% for comment_sub in comments_sub %}
 								{% if comment_sub.main_comment  == comment.id %}
-									<div style="margin-left: 20px; margin-bottom: 50px">
+									<div id="comment_{{ comment_sub.id }}"  style="margin-left: 20px; margin-bottom: 50px">
 										<div style="display: flex">
 											<div style="display: flex; justify-content: space-between;">
 												<a href="/"><img src="/static/news_portal/images/avatar.jpg" alt="Фото пользователя"></a>
 												<h4 style="margin-left: 10px">{{ comment_sub.author }}</h4>
 											</div>
-											<div style="margin-left: 40px">
+											<div style="margin-left: 20px">
 												<time class="published" >{{ comment_sub.created_at|date:"d E Y В H:i" }}</time>
 											</div>
 										</div>
@@ -127,10 +163,12 @@
 									{% else %}
 									<p>Только зарегистрированные пользователи могут оставлять комментарии. <a href="{% url 'news_auth_registered:login' %}">Войдите,</a> пожалуйста.</p>
 									{% endif %}
+									<a href="#top">нажми</a>
 								</div>
 							</div>
 						</div>
-
+					{% if only_comment == True %}
+					{% elif only_comment == False %}
 						<ul class="pagination_button_center actions pagination">
 							{% if page_comment.has_previous %}
 							<li><a class="button_mobile button big previous button" href="?page={{ page_comment.previous_page_number }}"></a></li>
@@ -146,14 +184,17 @@
 							<li><a class="button_mobile disabled big next button" href=""></a></li>
 							{% endif %}
 						</ul>
+					{% endif %}
 					</div>
+
 
 {% endblock %}
 
 
 					{% block content_author %}
 					<!-- Mini Posts -->
-							<section>
+						<section>
+							<div>
 								<h1>Ещё от автора</h1>
 								<div class="mini-posts">
 								{% for news_author in news_only_author %}
@@ -171,9 +212,9 @@
 											{% endif %}
 										</article>
 								{% endfor %}
-
 								</div>
-							</section>
+							</div>
+						</section>
 					{% endblock %}
 
 
@@ -215,8 +256,23 @@
 			});
 		}
 
+		function subscription(author_id, user_id) {
+			$.post("{% url 'news_output:subscription' %}", {
+				author_id: author_id,
+				user_id: user_id,
+			}).done(function(data) {
+					$('#subscribe').html(data);
+			}).fail(function() {
+				alert('Error: Что-то пошло не так.');
+			});
+		}
 
 
-
+		var myHash = location.hash; //получаем значение хеша
+		console.log(myHash)
+		location.hash = ''; //очищаем хеш
+		if(myHash[1] != undefined){ //проверяем, есть ли в хеше какое-то значение
+			$('html, body').animate({scrollTop: $(myHash).offset().top - 80}, 500); //скроллим за полсекунды
+		};
 	</script>
 {% endblock %}

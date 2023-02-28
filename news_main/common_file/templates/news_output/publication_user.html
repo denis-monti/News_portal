@@ -9,8 +9,8 @@
 
 	<!-- Post -->
 	<div class="post">
-		<div style="display: flex; justify-content: space-evenly">
-			<div style="display: flex; justify-content: space-around">
+		<div class="type_sorting_block">
+			<div>
 				<div style="width: 25%"><a href="{% url 'news_output:publication_user_auth' type_sort='best' user_id=user.id %}">Лучшее</a></div>
 				<div><a href="{% url 'news_output:publication_user_auth' type_sort='published' user_id=user.id %}">По убыванию даты публикации</a></div>
 				<div><a href="{% url 'news_output:publication_user_auth' type_sort='-published' user_id=user.id %}">По возрастанию даты публикации</a></div>
@@ -63,10 +63,12 @@
 			{% else %}
 			<li><a class="button_mobile disabled big previous button" href=""></a></li>
 			{% endif %}
-			&nbsp; &nbsp; | &nbsp; &nbsp;
-			Страницы {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
-			&nbsp; &nbsp; | &nbsp; &nbsp;
+			<span>
+			&nbsp; &nbsp;
+			Стр {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
+				 &nbsp; &nbsp;
 			{% if page_obj.has_next %}
+			</span>
 			<li><a  class="button_mobile button big next" href="?page={{ page_obj.next_page_number }} "></a></li>
 			{% else %}
 			<li><a class="button_mobile disabled big next button" href=""></a></li>

@@ -6,15 +6,13 @@ from django.core import validators
 from django.forms import inlineformset_factory, formset_factory
 
 class NewsForm(forms.ModelForm):
-    captcha = CaptchaField(generator='captcha.helpers.math_challenge', label='Вычислите значение', error_messages={'invalid': 'Ошибка в вычислениях попробуйте ещё раз'})
+    # captcha = CaptchaField(generator='captcha.helpers.math_challenge', label='Вычислите значение', error_messages={'invalid': 'Ошибка в вычислениях попробуйте ещё раз'})
     image = forms.ImageField(validators=[validators.FileExtensionValidator(
         allowed_extensions=('gif', 'jpg', 'png', 'jpeg'))],
         error_messages={
             'invalid_extension': 'Этот формат не поддерживаеться'},
         widget=forms.widgets.ClearableFileInput(attrs={'multiple': True}))
-    # class Meta:
-    #     model = News
-    #     fields = ('title', 'description', 'file_path')
+
 
     class Meta:
         model = News
@@ -30,7 +28,6 @@ class SubRubricForm(forms.ModelForm):
     super_rubric = forms.ModelChoiceField(
         queryset=SuperRubric.objects.all(), empty_label=None,
         label='Надрубрика', required=True)
-
 
     class Meta:
         model = SubRubric
@@ -60,9 +57,6 @@ class CommentUserForm(forms.ModelForm):
 
 
 class CommentUserMainForm(forms.ModelForm):
-    # target_comment = forms.ModelChoiceField(
-    #     queryset=Comment.objects.all(), empty_label=None,
-    #     label='Коммент ответ на коммент', required=True)
     main_comment = forms.ModelChoiceField(
         queryset=Comment.objects.values_list('id', flat=True).filter(target_comment__isnull=True), empty_label='---------',
         label='Главный коммент Ветки', required=False, widget=forms.HiddenInput)
@@ -89,11 +83,7 @@ class LikeDislikeForm(forms.ModelForm):
         model = AdvUser
         fields = '__all__'
 
-# class NewsFormEditDeleteAdd(forms.ModelForm):
-#     class Meta:
-#         model = News
-#         fields = '__all__'
-#         Widgets = {'author': forms.HiddenInput}
+
 
 AIFormSet = inlineformset_factory(News, AdditionalImage, fields='__all__')
 # AIFormSet = formset_factory(NewsForm, AdditionalImageForm)

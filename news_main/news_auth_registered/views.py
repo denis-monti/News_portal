@@ -5,7 +5,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.views.generic.detail import DetailView, SingleObjectMixin
 from django.views.generic.list import ListView
-from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView, PasswordChangeDoneView, PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView
+from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView, PasswordChangeDoneView, PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView
 from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm, PasswordResetForm
 from django.urls import reverse_lazy
 from django.core.mail import EmailMessage, EmailMultiAlternatives, send_mail, mail_admins
@@ -16,6 +16,8 @@ from django.core.signing import BadSignature
 from .models import *
 from .forms import *
 from .utilites import signer
+from django.db.models import Q, Count
+
 
 
 class Login(LoginView):
@@ -42,22 +44,6 @@ class PasswordResetSend(PasswordResetView, EmailMultiAlternatives):
     success_url = reverse_lazy("news_auth_registered:password_reset_done")
     extra_context = {'auth': 0}
 
-    # def get_success_url(self):
-    #     return reverse_lazy('news_auth_registered:password_reset_done')
-
-    # s = render_to_string(email_template_name, extra_context)
-    # em = EmailMultiAlternatives(subject='Запрос на сброс пароля', body=s, to=['d.matin.k@yandex.ru'])
-    #em.attach_alternative()
-    # em.send()
-    # send_mail('Запрос на сброс пароля', email_template_name, from_email='karkalak@mail.ru', recipient_list=['d.matin.k@yandex.ru'])
-    # mail_admins('Подьём', 'gdfg')
-
-# class reset(PasswordResetConfirmView):
-#     template_name = 'news_auth_registered/password_reset_confirm.html'
-#     extra_context = {'auth': 0}
-#
-#     def get_success_url(self):
-#         return reverse_lazy('news_auth_registered:confirm_password')
 
 class ProfileSetting(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = AdvUser
@@ -75,7 +61,8 @@ class ProfileSetting(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
             queryset = self.get_queryset()
         return get_object_or_404(queryset, pk=self.user_id)
 
-class RegisterUserView(CreateView):
+
+class RegisterUserView(LoginRequiredMixin, CreateView):
     model = AdvUser
     template_name = 'news_auth_registered/register_user.html'
     form_class = RegisterUserForm
@@ -120,3 +107,65 @@ class DeleteUserView(LoginRequiredMixin, DeleteView):
         if not queryset:
             queryset = self.get_queryset()
         return get_object_or_404(queryset, pk=self.user_id)
+
+class PasswordResetConfirm(PasswordResetConfirmView):
+    template_name = 'news_auth_registered/password_reset_confirm.html'
+    extra_context = {'auth': 0}
+    success_url = reverse_lazy("news_auth_registered:password_reset_complete")
+
+class Conversations(LoginRequiredMixin, ListView):
+    template_name = 'news_auth_registered/conversations_list.html'
+    model = Dialog
+    extra_context = {'auth': 0}
+    paginate_by = 2
+
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['data'] = context['object_list']
+        for i in context['data']:
+            print(i.message_set.last())
+        # context['followers/following'] = AdvUser.objects.filter(id=context['object'].pk).annotate(following=Count('follow', filter=Q(follow__user_id=context['user_detail'])), followers=Count('follow', filter=Q(follow__followers=context['user_detail'].pk)))
+        return context
+
+    def get_queryset(self, **kwargs):
+        self.object = AdvUser.objects.get(pk=self.request.user.pk)
+        dialog_list = self.object.dialogue_participant_one.all()
+        dialog_sender = self.object.dialogue_participant_two.all()
+        dialog_list |= dialog_sender
+        return dialog_list
+
+
+class Dialog(LoginRequiredMixin, ListView, DetailView, CreateView):
+    template_name = 'news_auth_registered/dialog_message.html'
+    model = AdvUser
+    extra_context = {'auth': 0}
+
+    def get_form(self, form_class=None):
+        initial = {'dialog_id': self.kwargs['dialog_id']}
+        if self.request.user.is_authenticated:
+            initial['author'] = self.request.user.pk
+            Message(self.get_form_kwargs(), initial=initial, instance=self.object)
+            return Message(initial=initial)
+        else:
+            return None
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['user_detail'] = AdvUser.objects.get(pk=context['object'].pk)
+        context['data'] = context['object_list']
+        context['type_data'] = self.kwargs['slug']
+        return context
+
+
+    def get_queryset(self, **kwargs):
+        self.object = AdvUser.objects.get(username=self.kwargs['slug'])
+        # return self.object.news_set.annotate(like=Count('likedislike', filter=Q(likedislike__is_like=1, likedislike__target_comment=None)), dislike=Count('likedislike', filter=Q(likedislike__is_dislike=1, likedislike__target_comment=None))).order_by('-published')
+        dialog_recipient = self.object.dialogue_participant_one.filter(user2_id=self.request.user.pk)
+        dialog_sender = self.object.dialogue_participant_two.filter(user1_id=self.request.user.pk)
+        if dialog_recipient.exists():
+            dialog = dialog_recipient[0].message_set.all()
+        elif dialog_sender.exists():
+            dialog = dialog_sender[0].message_set.all()
+        return dialog
+

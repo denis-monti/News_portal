@@ -1,0 +1,82 @@
+{% extends "layout/base.html" %}
+
+{% load static %}
+{% load filtersandtags %}
+{% load thumbnail %}
+
+
+{% block content %}
+				<!-- Main -->
+					<div style="display: flex; width: 75%">
+						<div style=" width: 100%; margin-bottom: 15px">
+							<div class="post_profile_info">
+								<div style="display: flex; justify-content: space-between">
+									<div class="about_the_author">
+										<div>
+											<h2>Диалоги</h2>
+										</div>
+									</div>
+									<div>
+										<a href="/">Поиск</a>
+										<a>обновить страницу</a>
+									</div>
+								</div>
+							</div>
+							<div style="height: 100%;">
+									{% for dialog in data %}
+										{% if dialog.user1_id != user %}
+											<a href="{% url 'news_auth_registered:private_dialog' slug=dialog.user1_id.slug %}">
+										{% else %}
+											<a href="{% url 'news_auth_registered:private_dialog' slug=dialog.user2_id.slug %}">
+										{% endif %}
+											<article class="post_profile_info">
+													<div style="display: flex">
+														<div style="width: 100%; display: flex; justify-content: space-between;">
+															{% if dialog.user1_id != user %}
+															<a href="{% url 'news_auth_registered:private_dialog' slug=dialog.user1_id.slug %}">открыть диалог</a>
+															<a style="border-bottom: none;" href="{% url 'news_output:users_info' slug=dialog.user1_id.slug  %}"><img src="/static/news_portal/images/avatar.jpg" alt="Фото пользователя"></a>
+															<div style="width: 100%; display: flex; flex-direction: column; padding: 0 0 0 10px;">
+																<div>
+																	<span style="border-bottom: none; color: cadetblue; padding: 0 0 5px 0;"><a href="{% url 'news_output:users_info' slug=dialog.user1_id.slug %}">@{{ dialog.user1_id.slug }}</a></span>
+																	<time class="published" >{{ dialog.message_set.last.pub_date|date:"d E Y в H:i" }}</time>
+																</div>
+															{% else %}
+															<a href="{% url 'news_auth_registered:private_dialog' slug=dialog.user2_id.slug %}">открыть диалог</a>
+															<a style="border-bottom: none;" href="{% url 'news_output:users_info' slug=dialog.user2_id.slug  %}"><img src="/static/news_portal/images/avatar.jpg" alt="Фото пользователя"></a>
+															<div style="width: 100%; display: flex; flex-direction: column; padding: 0 0 0 10px;">
+																<div>
+																	<span style="border-bottom:none; color: cadetblue; padding: 0 0 5px 0;"><a href="{% url 'news_output:users_info' slug=dialog.user2_id.slug  %}">@{{ dialog.user2_id.slug }}</a></span>
+																	<time class="published" >{{ dialog.message_set.last.pub_date|date:"d E Y в H:i" }}</time>
+																</div>
+															{% endif %}
+																<span style="font-size: 18px; overflow-x: hidden; text-overflow: ellipsis">{{ dialog.message_set.last }}</span>
+															</div>
+														</div>
+													</div>
+											</article>
+											</a>
+									{% endfor %}
+									<ul class="pagination_button_center actions pagination">
+										{% if page_obj.has_previous %}
+										<li><a class="button_mobile button big previous button" href="?page={{ page_obj.previous_page_number }}"></a></li>
+										{% else %}
+										<li><a class="button_mobile disabled big previous button" href=""></a></li>
+										{% endif %}
+										<span>
+										&nbsp; &nbsp;
+										Стр {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
+											 &nbsp; &nbsp;
+										{% if page_obj.has_next %}
+										</span>
+										<li><a  class="button_mobile button big next" href="?page={{ page_obj.next_page_number }} "></a></li>
+										{% else %}
+										<li><a class="button_mobile disabled big next button" href=""></a></li>
+										{% endif %}
+									</ul>
+							</div>
+						</div>
+					</div>
+{% endblock %}
+
+{% block js %}
+{% endblock %}

@@ -1,105 +1,30 @@
-import json
-from django.http.response import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse, HttpResponseRedirect
-from django.template.response import TemplateResponse
-from django.views.generic.dates import ArchiveIndexView, DateDetailView
-from django.template.loader import get_template
 from django.core.paginator import Paginator
 from django.views.generic.detail import DetailView, SingleObjectMixin
-from django.views.generic.list import ListView, MultipleObjectTemplateResponseMixin, MultipleObjectMixin
+from django.views.generic.list import ListView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
-from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView, PasswordChangeDoneView, PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView
-from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm, PasswordResetForm
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin, PermissionRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse_lazy
 from django.views.decorators.csrf import csrf_exempt
-from django.core.mail import EmailMessage, EmailMultiAlternatives, send_mail, mail_admins
-from django.template.loader import render_to_string
 from django.http import Http404
 from django.utils.translation import gettext as _
-from django.forms import  formset_factory
-from datetime import datetime
 from django.contrib import messages
 
 
-import abc
+
 
 from django.http import HttpResponse
 # для поиск одна из двух в зависимости от иструмента поиска
 # from elasticsearch_dsl import Q
 from django.db.models import Q, Count
 
-from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.views import APIView
-
-from .documents import NewsDocument
 
 
-from .models import *
 from precise_bbcode.bbcode import get_parser
-
-from django import forms
-from django.contrib.auth.models import User
+from news_auth_registered.models import Follow, AdvUser
 from .forms import *
 
-
-# def index(request):
-#     news_all = News.objects.all()
-#     paginator = Paginator(news_all, 1)
-#     if 'page' in request.GET:
-#         page_num = request.GET['page']
-#     else:
-#         page_num = 1
-#     page = paginator.get_page(page_num)
-#     context = {'news_all': page.object_list, 'page': page}
-#     template = get_template('news_output/22.html')
-#     # return HttpResponse(template.render(context=context,
-#     #                                     request=request))
-#
-#     return TemplateResponse(request, 'news_output/22.html',
-#                             context=context)
-
-# class NewsIndexView(ArchiveIndexView):
-#     model = News
-#     paginate_by = 3
-#     date_field = 'published'
-#     date_list_period = 'year'
-#     template_name = 'news_output/index.html'
-#     context_object_name = 'news_all'
-#     allow_empty = True
-#
-#     def get_context_data(self, *args, **kwargs):
-#         context = super().get_context_data(*args, **kwargs)
-#         context['rubrics'] = Rubric.objects.all()
-#         return context
-
-# def ajax_sorting(request):
-#     print(request.GET)
-#     print(request.GET['type_sort'])
-#     print(request.GET['condition_button'])
-#
-#     if request.GET['condition_button'] == 'true':
-#         news_all = News.objects.order_by(request.GET['type_sort']).all()
-#     elif request.GET['condition_button'] == 'false':
-#         news_all = News.objects.order_by('-' + request.GET['type_sort']).all()
-#     else:
-#         news_all = News.objects.all()
-#
-#     paginator = Paginator(news_all, 3)
-#     if 'page' in request.GET:
-#         page_num = request.GET['page']
-#     else:
-#         page_num = 1
-#     page = paginator.get_page(page_num)
-#     context = {'news_all': page.object_list, 'page': page}
-#     template = get_template('news_output/22.html')
-#     # return HttpResponse(template.render(context=context,
-#     #                                     request=request))
-#
-#     return TemplateResponse(request, 'news_output/ajax_news_for_index.html',
-#                             context=context)
 
 class NewsIndexView(SuccessMessageMixin, ListView):
     model = News
@@ -110,8 +35,6 @@ class NewsIndexView(SuccessMessageMixin, ListView):
 
     def get_queryset(self):
         if self.kwargs['type_sort'] == 'default':
-            # t = News.objects.annotate(like=Count('likedislike', filter=Q(likedislike__is_like=1)), dislike=Count('likedislike', filter=Q(likedislike__is_dislike=1)))
-            # t = LikeDislike.objects.filter(news__in=y, is_like=1).filter(news__in=y, is_dislike=1)
             self.kwargs['type_sort'] = '-published'
         return News.objects.annotate(like=Count('likedislike', filter=Q(likedislike__is_like=1, likedislike__target_comment=None)), dislike=Count('likedislike', filter=Q(likedislike__is_dislike=1, likedislike__target_comment=None))).order_by(self.kwargs['type_sort'])
 
@@ -120,9 +43,6 @@ class NewsIndexView(SuccessMessageMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['like'] = LikeDislike.objects.values('news').filter(news__in=context['object_list'], is_like=1).annotate(total=Count('news')).order_by('-news__published')
-        context['dislike'] = LikeDislike.objects.values_list('news').filter(news__in=context['object_list'], is_dislike=1).annotate(total=Count('news')).order_by('-news__published')
-        # print(context['like'], context['dislike'], context['news_all'])
         return context
 
 class NewsByRubricView(SingleObjectMixin, ListView):
@@ -137,11 +57,7 @@ class NewsByRubricView(SingleObjectMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['current_rubric'] = self.object
-        # context['rubrics'] = Rubric.objects.all()
         context['news_all'] = context['object_list']
-        # date = datetime.today()
-        # week = date.strftime("%V")
-        # context['news_week_more_views'] = News.objects.filter(published__week=week)
         return context
 
     def get_queryset(self, **kwargs):
@@ -156,26 +72,29 @@ class NewsByRubricView(SingleObjectMixin, ListView):
 class NewsCreateView(LoginRequiredMixin, CreateView):
     template_name = 'news_output/create.html'
     model = News
-    form_class = NewsForm
 
-    # def get_success_url(self):
-    #     return reverse_lazy('news_output:by_rubric', kwargs={'rubric_id': self.object.rubric_id})
-
-    # def get_form(self, form_class=None):
-    #     return NewsForm(self.get_form_kwargs(), instance=self.object)
+    def get_form(self, form_class=None):
+        initial = {}
+        if self.request.user.is_authenticated:
+            initial['author'] = self.request.user.pk
+            return NewsForm(initial=initial)
+        else:
+            return None
 
     def post(self, request, *args, **kwargs):
-        super().post(request, *args, **kwargs)
-        # form = NewsForm(request.POST, request.FILES)
-        # if form.is_valid():
-        #     form.save()
-        formset = AIFormSet(request.POST, request.FILES, instance=self.object)
-        if formset.is_valid():
-            formset.save()
-            return HttpResponseRedirect(reverse_lazy('news_output:index'))
+        form = NewsForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            news = form.save()
+            formset = AIFormSet(request.POST, request.FILES, instance=news)
+            if formset.is_valid():
+                formset.save()
+                return redirect('news_output:index')
+            formset = AIFormSet()
+            return render(request, 'news_output/create.html', {'form': form, 'formset': formset})
         else:
             formset = AIFormSet()
-        return render(request, 'news_output/create.html', {'formset': formset})
+            return render(request, 'news_output/create.html', { 'form': form, 'formset': formset})
 
 
     def get_context_data(self, **kwargs):
@@ -205,34 +124,41 @@ def profile_news_add(request):
 class NewsEditView(LoginRequiredMixin, UpdateView):
     template_name = 'news_output/edit_news.html'
     model = News
-    form_class = NewsForm
 
     def get_success_url(self):
         return reverse_lazy('news_output:by_rubric', kwargs={'rubric_id': self.object.rubric_id})
 
+
+    def get_form(self, form_class=None):
+        if self.request.user.is_authenticated:
+            return NewsForm(instance=self.object)
+        else:
+            return None
+
+
+
     def post(self, request, *args, **kwargs):
         super().post(request, *args, **kwargs)
-        # form = NewsForm(request.POST, request.FILES)
-        # if form.is_valid():
-        #     form.save()
-        formset = AIFormSet(request.POST, request.FILES, instance=self.object)
-        if formset.is_valid():
-            formset.save()
-            return HttpResponseRedirect(reverse_lazy('news_output:index'))
+        form = NewsForm(request.POST, request.FILES, instance=self.object)
+        if form.is_valid():
+            news = form.save()
+            formset = AIFormSet(request.POST, request.FILES, instance=news)
+            if formset.is_valid():
+                formset.save()
+                return redirect('news_output:index')
+            else:
+                form = NewsForm(instance=self.object)
+                formset = AIFormSet(instance=self.object)
+                return render(request, 'news_output/edit_news.html', {'form': form, 'formset': formset})
         else:
+            form = NewsForm(instance=self.object)
             formset = AIFormSet(instance=self.object)
-        return render(request, 'news_output/create.html', {'formset': formset})
+        return render(request, 'news_output/edit_news.html', {'formset': formset, 'form': form})
 
-    def get(self, request, *args, **kwargs):
-        super().get(request, *args, **kwargs)
-        form = NewsForm(instance=self.object)
-        formset = AIFormSet(instance=self.object)
-        return render(request, 'news_output/create.html', {'formset': formset, 'form': form})
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # context['form'] = NewsForm(initial={'author': self.request.user.pk})
-        context['formset'] = AIFormSet()
+        context['formset'] = AIFormSet(instance=self.object)
         return context
 
 
@@ -270,13 +196,6 @@ class NewsDetailView(DetailView, CreateView):
     template_name = 'news_output/news_detail.html'
     model = News
 
-
-
-
-
-
-
-
     def get_form(self, form_class=None):
         initial = {'news': self.kwargs['pk']}
         if self.request.user.is_authenticated:
@@ -295,11 +214,6 @@ class NewsDetailView(DetailView, CreateView):
         else:
             return redirect('news_output:detail', pk=self.object.pk)
 
-    # def get_queryset(self):
-    #     print(self.queryset.all())
-    #     return News.objects.filter(id=self.object.pk).annotate(
-    #         like=Count('likedislike', filter=Q(likedislike__is_like=1, likedislike__target_comment=None)),
-    #         dislike=Count('likedislike', filter=Q(likedislike__is_dislike=1, likedislike__target_comment=None))).first()
 
     def get_object(self, queryset=None):
         if queryset is None:
@@ -338,33 +252,27 @@ class NewsDetailView(DetailView, CreateView):
                                                      target_comment=None).annotate(
             like=Count('likedislike', filter=Q(likedislike__is_like=1)),
             dislike=Count('likedislike', filter=Q(likedislike__is_dislike=1))).order_by('created_at')
-        paginator = Paginator(queryset, 2)
-        page = self.request.GET.get('page', 1)
-        comment_all = paginator.get_page(page)
+        if self.kwargs['only_comment'] == False:
+            paginator = Paginator(queryset, 2)
+            page = self.request.GET.get('page', 1)
+            comment_all = paginator.get_page(page)
+        elif self.kwargs['only_comment'] == True:
+            comment_all = queryset
         return comment_all
 
     def get_context_data(self, **kwargs):
         parser = get_parser()
         context = super().get_context_data(**kwargs)
-        # context['rubrics'] = Rubric.objects.all()
         context['parsed_content'] = parser.render(context['news'].description)
-        print(context['news'])
+        context['only_comment'] = self.kwargs['only_comment']
         context['ais'] = context['object'].additionalimage_set.all()
-        context['comments'] = Comment.objects.filter(news=context['object'].id, is_active=True, target_comment=None).annotate(like=Count('likedislike', filter=Q(likedislike__is_like=1)), dislike=Count('likedislike', filter=Q(likedislike__is_dislike=1))).order_by('created_at')
+        # context['comments'] = Comment.objects.filter(news=context['object'].id, is_active=True, target_comment=None).annotate(like=Count('likedislike', filter=Q(likedislike__is_like=1)), dislike=Count('likedislike', filter=Q(likedislike__is_dislike=1))).order_by('created_at')
         context['comments_sub'] = Comment.objects.filter(news=context['object'].id, is_active=True).exclude(target_comment=None).annotate(like=Count('likedislike', filter=Q(likedislike__is_like=1)), dislike=Count('likedislike', filter=Q(likedislike__is_dislike=1))).order_by('created_at')
-        context['news_only_author'] = News.objects.filter(author=context['object'].author.pk)
-        context['like'] = LikeDislike.objects.filter(news=context['object'].id, is_like=1).count()
-        context['dislike'] = LikeDislike.objects.filter(news=context['object'].id, is_dislike=1).count()
-        # comment = Comment.objects.filter(news=context['object'].id, is_active=True)
-        # page: int = self.request.GET.get('page', 1)
-        # p = Paginator(comment, 5)
-        # context['page_comment'] = p.get_page(page)
+        context['news_only_author'] = News.objects.filter(author=context['object'].author.pk, rubric=context['news'].rubric).annotate(active=Count('likedislike', filter=Q(likedislike__target_comment=None))).filter(active__gt=1).exclude(id=context['news'].id)[:5]
+        if self.request.user.is_authenticated:
+            context['subrciption'] = Follow.objects.filter(user_id=self.request.user.id, followers=context['news'].author.id).exists()
         comment = self.get_page_comment()
         context['page_comment'] = comment
-         # date = datetime.today()
-        # week = date.strftime("%V")
-        # context['news_week_more_views'] = News.objects.filter(published__week=week)
-
         return context
 
 
@@ -388,42 +296,9 @@ def NewsDetail(request, pk):
         if form_class(request.POST).is_valid():
             form_class(request.POST).save()
             return redirect('news_output:detail', pk=news.pk)
-        # if form_class(request.POST).is_valid():
-        #     form_class(request.POST).save()
-        #     messages.add_message(request, messages.SUCCESS,
-        #                          'Комментарий добавлен')
-        # else:
-        #     form = form_class(request.POST)
-        #     messages.add_message(request, messages.WARNING,
-        #                          'Комментарий не добавлен')
     context = {'news': news, 'ais': ais, 'len_comments': len_comments, 'comments': comments, 'comments_sub': comments_sub, 'news_only_author': news_only_author, 'form': form}
     return render(request, 'news_output/news_detail.html', context)
 
-
-# class PublicationUser(SingleObjectMixin, ListView):
-#     paginate_by = 1
-#     template_name = 'news_output/publication_user.html'
-#     pk_url_kwarg = 'user_id'
-#
-#     def get(self, request, **kwargs):
-#         self.object = self.get_object(queryset=AdvUser.objects.all())
-#         return super().get(request, **kwargs)
-#
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#         # context['current_rubric'] = self.object
-#         # context['rubrics'] = Rubric.objects.all()
-#         context['news_all'] = context['object_list']
-#         # date = datetime.today()
-#         # week = date.strftime("%V")
-#         # context['news_week_more_views'] = News.objects.filter(published__week=week)
-#         return context
-#
-#     def get_queryset(self, **kwargs):
-#         if self.kwargs['type_sort'] == 'default':
-#             return self.object.news_set.all()
-#         else:
-#             return self.object.news_set.order_by(self.kwargs['type_sort']).all()
 
 
 class PublicationUser(LoginRequiredMixin, ListView):
@@ -467,12 +342,7 @@ class SearchNews(ListView, forms.Form):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # context['rubrics'] = Rubric.objects.all()
         context['search_text'] = self.request.GET.get('query')
-        # date = datetime.today()
-        # week = date.strftime("%V")
-        # context['news_week_more_views'] = News.objects.filter(published__week=week)
-
         return context
 
 @csrf_exempt
@@ -588,6 +458,72 @@ def AjaxLikeDislike(request):
         return resp
 
 
+class Profile(ListView, DetailView):
+    template_name = 'news_output/profile_info.html'
+    model = AdvUser
+    paginate_by = 2
+    # slug_url_kwarg = 'slug'
 
 
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['user_detail'] = AdvUser.objects.get(pk=context['object'].pk)
+        context['auth'] = 0
+        context['data'] = context['object_list']
+        context['type_data'] = self.kwargs['section']
+        context['followers_count'] = Follow.objects.filter(followers=context['user_detail'].pk).exclude(user_id=context['user_detail']).count()
+        context['following_count'] = Follow.objects.filter(user_id=context['user_detail']).exclude(followers=context['user_detail'].pk).count()
+        return context
+
+    def get_object(self, queryset=None):
+        pk = (AdvUser.objects.get(slug=self.kwargs['slug'])).pk
+        return pk
+
+    # def get(self, request, **kwargs):
+        # user = AdvUser.objects.get(slug=self.kwargs['slug'])
+        # if self.kwargs['section'] == 'news':
+        # self.object = self.get_object(queryset=AdvUser.objects.get(slug=self.kwargs['slug']))
+        # elif self.kwargs['section'] == 'comment':
+        #     self.object = self.get_object(queryset=Comment.objects.filter(author=user.id))
+        # elif self.kwargs['section'] == 'favourites_posts':
+        #     return None
+        # else:
+        #     print('hfg')
+        # # self.object = self.get_object(queryset=)
+        # return super().get(request, **kwargs)
+
+    def get_queryset(self, **kwargs):
+        self.object = AdvUser.objects.get(username=self.kwargs['slug'])
+        if self.kwargs['section'] == 'news':
+            return self.object.news_set.annotate(like=Count('likedislike', filter=Q(likedislike__is_like=1, likedislike__target_comment=None)), dislike=Count('likedislike', filter=Q(likedislike__is_dislike=1, likedislike__target_comment=None))).order_by('-published')
+        elif self.kwargs['section'] == 'comment':
+            return self.object.comment_set.annotate(like=Count('likedislike', filter=Q(likedislike__is_like=1)), dislike=Count('likedislike', filter=Q(likedislike__is_dislike=1))).order_by('-created_at')
+        elif self.kwargs['section'] == 'following':
+            return self.object.following_set.filter(user_id=self.object).exclude(followers=self.object.pk)
+        elif self.kwargs['section'] == 'followers':
+            return self.object.followers_set.filter(followers=self.object.pk).exclude(user_id=self.object)
+        elif self.kwargs['section'] == 'favourites_posts':
+            return None
+        else:
+            return super().get_queryset(**kwargs)
+
+@csrf_exempt
+def AjaxSubscription(request):
+    resp = HttpResponse("", content_type='text/plain; charset=utf- 8', status=200)
+    if request.method == 'POST' and request.POST['author_id'] != request.POST['user_id']:
+            user = AdvUser.objects.get(id=request.POST['user_id'])
+            subcribe = Follow.objects.filter(user_id=user, followers=request.POST['author_id'])
+            if not subcribe.exists():
+                follow = Follow()
+                follow.user_id = user
+                follow.followers = request.POST['author_id']
+                follow.save()
+                resp.write('Вы подписаны')
+            else:
+                subcribe.delete()
+                resp.write('Вы отписались')
+            # except Follow.DoesNotExist:
+    else:
+        resp.write('Вы не можете подписаться на самого себя')
+    return resp

@@ -4,7 +4,7 @@
 
 
 {% block content %}
-<div style="margin-left: auto; margin-right: auto; width: 45%">
+<div class="register_active">
 	<div id="main">
 		<article class="post">
 			<div>
@@ -18,7 +18,7 @@
 					{% csrf_token %}
 					{{ form.as_p }}
 					<input type="hidden" name="next" value="{{ next }}">
-					<input style="width: 100%" type="submit" value="Войти">
+					<input class="button_size_auth" type="submit" value="Войти">
 					<a href="{% url 'news_auth_registered:password_reset' %}">Забыли пароль?</a>
 				</form>
 				<div>
